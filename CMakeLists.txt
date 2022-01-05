@@ -18,13 +18,16 @@ add_executable(${NAME}
     main.c # <-- Add source files here!
 )
 
+include_directories(opus_pwm)
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
-include(pwm)
+#include(opus_pwm)
 
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
     opus_pwm # <-- List libraries here!
+    pico_stdlib
+    hardware_pwm
 )
 
 # create map/bin/hex file etc.
