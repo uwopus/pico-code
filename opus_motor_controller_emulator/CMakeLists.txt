@@ -1,0 +1,7 @@
+
+
+add_library(opus_motor_controller_emulator opus_fake_motor_controller.c opus_fake_motor_controller.h)
+
+# pull in common dependencies and additional pwm hardware support
+target_link_libraries(opus_motor_controller_emulator pico_stdlib hardware_pwm hardware_gpio hardware_adc)
+target_include_directories(opus_motor_controller_emulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

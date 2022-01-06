@@ -20,8 +20,8 @@ add_executable(${NAME}
 
 # include_directories(opus_pwm)
 add_subdirectory(opus_pwm)
+add_subdirectory(opus_motor_controller_emulator)
 # Include required libraries
-# This assumes `pimoroni-pico` is stored alongside your project
 # include(opus_pwm/opus_pwm)
 
 # create map/bin/hex file etc.
@@ -30,4 +30,6 @@ pico_add_extra_outputs(${NAME})
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
 opus_pwm
+opus_motor_controller_emulator
+hardware_adc
 )
