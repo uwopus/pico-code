@@ -2,8 +2,11 @@
  * Copyright (c) 2022 Opus
  * PWM Library for Motor Controller
  */
+#include "pico/stdlib.h"
+#include "hardware/pwm.h"
+#include "stdio.h"
+#include "opus_pwm.h"
 
-#define PWM_WRAP 10000 // Max is 65536, increase to have more precision in duty cycles, decrease to have quicker response time to channel change
 
 uint init_pwm(uint GPIO_Pin,uint cycles){
     // Tell GPIO # They are allocated to the PWM
@@ -27,14 +30,10 @@ uint set_pwm(uint pin, float duty_cycle) {
 
     if (duty_cycle > 1) {
         duty_cycle = 1;
-        if(DEBUG) {
-            printf("set_pwm: WARNING: duty_cycle > 1");
-        }
+        // printf("set_pwm: WARNING: duty_cycle > 1");
     } else if (duty_cycle < 0) {
         duty_cycle = 0;
-        if(DEBUG) {
-            printf("set_pwm: WARNING: duty_cycle < 0");
-        }
+        // printf("set_pwm: WARNING: duty_cycle < 0");
     }
     
     int count = PWM_WRAP*duty_cycle;

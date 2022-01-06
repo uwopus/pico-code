@@ -18,28 +18,16 @@ add_executable(${NAME}
     main.c # <-- Add source files here!
 )
 
-include_directories(opus_pwm)
+# include_directories(opus_pwm)
+add_subdirectory(opus_pwm)
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
-#include(opus_pwm)
-
-# Don't forget to link the libraries you need!
-target_link_libraries(${NAME}
-    opus_pwm # <-- List libraries here!
-    pico_stdlib
-    hardware_pwm
-)
+# include(opus_pwm/opus_pwm)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${NAME})
 
-# Set up files for the release packages
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.uf2
-    ${CMAKE_CURRENT_LIST_DIR}/README.md
-    DESTINATION .
+# Don't forget to link the libraries you need!
+target_link_libraries(${NAME}
+opus_pwm
 )
-
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_GENERATOR "ZIP" "TGZ")
-include(CPack)
