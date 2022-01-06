@@ -2,7 +2,8 @@
  * Copyright (c) 2022 Opus
  */
 
-
+#ifndef OPUS_PWM_H
+#define OPUS_PWM_H
 
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
@@ -16,3 +17,4 @@ uint set_pwm(uint pin, float duty_cycle);
 
 uint init_pwm(uint GPIO_Pin,uint cycles);
 
+#endif
