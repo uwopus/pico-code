@@ -7,8 +7,8 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 
-#define pPWM_LEFT_GPIO 0
-#define pPWM_RIGHT_GPIO 1
+#define pPWM_LEFT_GPIO 28
+#define pPWM_RIGHT_GPIO 16
 #define PWM_WRAP 10000 // Max is 65536, increase to have more precision in duty cycles, decrease to have quicker response time to channel change
 
 
