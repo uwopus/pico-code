@@ -20,6 +20,7 @@ add_executable(${NAME}
 
 # include_directories(opus_pwm)
 add_subdirectory(opus_pwm)
+add_subdirectory(opus_pio_encoder)
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
 # include(opus_pwm/opus_pwm)
@@ -31,3 +32,5 @@ pico_add_extra_outputs(${NAME})
 target_link_libraries(${NAME}
 opus_pwm
 )
+
+
