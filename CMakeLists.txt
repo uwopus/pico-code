@@ -24,6 +24,11 @@ add_subdirectory(opus_motor_controller_emulator)
 # Include required libraries
 # include(opus_pwm/opus_pwm)
 
+
+# enable usb output, disable uart output
+pico_enable_stdio_usb(pico_code 1)
+pico_enable_stdio_uart(pico_code 0)
+
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${NAME})
 

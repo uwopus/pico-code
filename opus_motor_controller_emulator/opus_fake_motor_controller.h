@@ -13,7 +13,7 @@
 
 #define pENCODER_A 0 // we want these both to be on the same slice to share the same clock
 #define pENCODER_B 1
-#define MAX_FAKE_VEL 10000
+#define MAX_FAKE_VEL 100000
 
 void init_fake_encoder_output();
 

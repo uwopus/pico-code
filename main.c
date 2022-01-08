@@ -19,7 +19,7 @@ int main() {
 
     init_fake_encoder_output();
 
-    uint count = 0;
+    uint32_t count = 0;
 
 
     /* How this works is each encoder channel is split into 4 sections
@@ -33,12 +33,17 @@ int main() {
         But count will increment at a rate that is the velocity.
 
         */
-    while(1) {
 
+       uint num_of_rotations = 0;
+       printf("Rotations: %d\n",num_of_rotations);
+    while(1) {
         // Read in the desired motor velocity from adc
         uint16_t result = adc_read();
         // Convert adc readings to this arbitrary velocity
         uint motor_vel = conversion_factor * result;
+
+        // Keep constant velocity for now
+        motor_vel = 1;
 
         uint leadEncoder = 0; // 0 off , maybe make this an enum
         uint lagEncoder = 0;
@@ -79,6 +84,8 @@ int main() {
 
         if (count > 4*MAX_FAKE_VEL){ // Want the count to go up by 
             count = 0;
+            num_of_rotations++;
+            printf("Rotations: %d\n",num_of_rotations);
         }
 
     }
