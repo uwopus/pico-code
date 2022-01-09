@@ -3,7 +3,7 @@ add_executable(opus_pio_encoder)
 pico_generate_pio_header(opus_pio_encoder ${CMAKE_CURRENT_LIST_DIR}/opus_pio_encoder.pio)
 
 target_sources(opus_pio_encoder PRIVATE opus_pio_encoder.cpp)
-
+target_include_directories(opus_pwm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(opus_pio_encoder PRIVATE
         pico_stdlib
         hardware_pio

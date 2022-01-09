@@ -1,102 +1,128 @@
-#include <stdio.h>
 
-#include "pico/stdlib.h"
-#include "hardware/pio.h"
-#include "hardware/irq.h"
+#include "opus_pio_encoder.h"
 
-#include "opus_pio_encoder.pio.h"
 
-// class to read the rotation of the rotary encoder
-class RotaryEncoder
+
+// the current location of rotation
+static int rotationL = 0;
+static int rotationR = 0;
+
+
+// rotary_encoder_A is the pin for the A of the rotary encoder.
+// The B of the rotary encoder has to be connected to the next GPIO.
+void rotary_encoder_init(uint rotary_encoder_A,uint pio_num)
 {
-public:
-    // constructor
-    // rotary_encoder_A is the pin for the A of the rotary encoder.
-    // The B of the rotary encoder has to be connected to the next GPIO.
-    RotaryEncoder(uint rotary_encoder_A)
+    uint8_t rotary_encoder_B = rotary_encoder_A + 1;
+    PIO pio = pio0; // default to pio0
+    uint8_t pio_IRQ = PIO0_IRQ_0; // default to PIO0_IRQ_0
+    void (*irq_handler_func)(void);
+    /* the ampersand is actually optional */
+    irq_handler_func = &pio0_irq_handler;
+    
+    if (pio_num == 1)
     {
-        uint8_t rotary_encoder_B = rotary_encoder_A + 1;
-        // pio 0 is used
-        PIO pio = pio0;
-        // state machine 0
-        uint8_t sm = 0;
-        // configure the used pins as input with pull up
-        pio_gpio_init(pio, rotary_encoder_A);
-        gpio_set_pulls(rotary_encoder_A, true, false);
-        pio_gpio_init(pio, rotary_encoder_B);
-        gpio_set_pulls(rotary_encoder_B, true, false);
-        // load the pio program into the pio memory
-        uint offset = pio_add_program(pio, &opus_pio_encoder_program);
-        // make a sm config
-        pio_sm_config c = opus_pio_encoder_program_get_default_config(offset);
-        // set the 'in' pins
-        sm_config_set_in_pins(&c, rotary_encoder_A);
-        // set shift to left: bits shifted by 'in' enter at the least
-        // significant bit (LSB), no autopush
-        sm_config_set_in_shift(&c, false, false, 0);
-        // set the IRQ handler
-        irq_set_exclusive_handler(PIO0_IRQ_0, pio_irq_handler);
-        // enable the IRQ
-        irq_set_enabled(PIO0_IRQ_0, true);
-        pio0_hw->inte0 = PIO_IRQ0_INTE_SM0_BITS | PIO_IRQ0_INTE_SM1_BITS;
-        // init the sm.
-        // Note: the program starts after the jump table -> initial_pc = 16
-        pio_sm_init(pio, sm, 16, &c);
-        // enable the sm
-        pio_sm_set_enabled(pio, sm, true);
+        pio = pio1;
+        pio_IRQ = PIO1_IRQ_0;
+        irq_handler_func = &pio1_irq_handler;
     }
-
-    // set the current rotation to a specific value
-    void set_rotation(int _rotation)
+    else if (pio_num > 1)
     {
-        rotation = _rotation;
+        printf("PIO number not defined as either 1 or 2");//print, or log problem
     }
+    
+    // state machine 0
+    uint8_t sm = 0;
+    // configure the used pins as input with pull up
+    pio_gpio_init(pio, rotary_encoder_A);
+    gpio_set_pulls(rotary_encoder_A, true, false);
+    pio_gpio_init(pio, rotary_encoder_B);
+    gpio_set_pulls(rotary_encoder_B, true, false);
+    // load the pio program into the pio memory
+    uint offset = pio_add_program(pio, &opus_pio_encoder_program);
+    // make a sm config
+    pio_sm_config c = opus_pio_encoder_program_get_default_config(offset);
+    // set the 'in' pins
+    sm_config_set_in_pins(&c, rotary_encoder_A);
+    // set shift to left: bits shifted by 'in' enter at the least
+    // significant bit (LSB), no autopush
+    sm_config_set_in_shift(&c, false, false, 0);
+    // set the IRQ handler
+    irq_set_exclusive_handler(pio_IRQ, pio0_irq_handler);
+    // enable the IRQ
+    irq_set_enabled(pio_IRQ, true);
+    pio->inte0 = PIO_IRQ0_INTE_SM0_BITS | PIO_IRQ0_INTE_SM1_BITS;
+    // init the sm.
+    // Note: the program starts after the jump table -> initial_pc = 16
+    pio_sm_init(pio, sm, 16, &c);
+    // enable the sm
+    pio_sm_set_enabled(pio, sm, true);
+}
 
-    // get the current rotation
-    int get_rotation(void)
+
+void pio0_irq_handler()
+{
+    // test if irq 0 was raised
+    if (pio0_hw->irq & 1)
     {
-        return rotation;
+        rotationL = rotationL - 1;
     }
-
-private:
-    static void pio_irq_handler()
+    // test if irq 1 was raised
+    if (pio0_hw->irq & 2)
     {
-        // test if irq 0 was raised
-        if (pio0_hw->irq & 1)
-        {
-            rotation = rotation - 1;
-        }
-        // test if irq 1 was raised
-        if (pio0_hw->irq & 2)
-        {
-            rotation = rotation + 1;
-        }
-        // clear both interrupts
-        pio0_hw->irq = 3;
+        rotationL = rotationL + 1;
     }
+    // clear both interrupts
+    pio0_hw->irq = 3;
+}
 
-    // the pio instance
-    PIO pio;
-    // the state machine
-    uint sm;
-    // the current location of rotation
-    static int rotation;
-};
-
-// Initialize static member of class Rotary_encoder
-int RotaryEncoder::rotation = 0;
+void pio1_irq_handler()
+{
+    // test if irq 0 was raised
+    if (pio1_hw->irq & 1)
+    {
+        rotationR = rotationR - 1;
+    }
+    // test if irq 1 was raised
+    if (pio1_hw->irq & 2)
+    {
+        rotationR = rotationR + 1;
+    }
+    // clear both interrupts
+    pio1_hw->irq = 3;
+}
 
 int main()
 {
+    //Setup toggle pin
+    const uint TOGGLE_PIN_L = 27;
+    gpio_init(TOGGLE_PIN_L);
+    gpio_set_dir(TOGGLE_PIN_L, GPIO_OUT);
+    const uint TOGGLE_PIN_R = 26;
+    gpio_init(TOGGLE_PIN_R);
+    gpio_set_dir(TOGGLE_PIN_R, GPIO_OUT);
+
     // needed for printf
     stdio_init_all();
-    // the A of the rotary encoder is connected to GPIO 16, B to GPIO 17
-    RotaryEncoder my_encoder(0);
-    // initialize the rotatry encoder rotation as 0
-    my_encoder.set_rotation(0);
+    // the A of the rotary encoder 0 is connected to GPIO 0, B to GPIO 1
+    rotary_encoder_init(0,0);
+    // the A of the rotary encoder 1 is connected to GPIO 26, B to GPIO 27
+    rotary_encoder_init(26,1);
+
+    // track rotations
+    int prev_rotationL = rotationL;
+    int prev_rotationR = rotationR;
+
     // infinite loop to print the current rotation
+
     while (true)
     {
-        printf("rotation=%d\n", my_encoder.get_rotation());
+        gpio_xor_mask((1 << TOGGLE_PIN_R));
+        if (rotationL != prev_rotationL || rotationR != prev_rotationR)
+        {
+            printf("%d | %d\n",rotationL,rotationR);
+            gpio_xor_mask(((rotationL != prev_rotationL) << TOGGLE_PIN_L) | ((rotationR != prev_rotationR) << TOGGLE_PIN_R));
+            prev_rotationL = rotationL;
+            prev_rotationR = rotationR;
+        }
     }
 }
