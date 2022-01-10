@@ -22,12 +22,12 @@ void rotary_encoder_init(uint rotary_encoder_A,uint pio_num)
     if (pio_num == 1)
     {
         pio = pio1;
-        pio_IRQ = PIO1_IRQ_0;
+        pio_IRQ = PIO1_IRQ_1;
         irq_handler_func = &pio1_irq_handler;
     }
     else if (pio_num > 1)
     {
-        printf("PIO number not defined as either 1 or 2");//print, or log problem
+        printf("PIO number not defined as either 0 or 1");//print, or log problem
     }
     
     // state machine 0
@@ -47,7 +47,7 @@ void rotary_encoder_init(uint rotary_encoder_A,uint pio_num)
     // significant bit (LSB), no autopush
     sm_config_set_in_shift(&c, false, false, 0);
     // set the IRQ handler
-    irq_set_exclusive_handler(pio_IRQ, pio0_irq_handler);
+    irq_set_exclusive_handler(pio_IRQ, irq_handler_func);
     // enable the IRQ
     irq_set_enabled(pio_IRQ, true);
     pio->inte0 = PIO_IRQ0_INTE_SM0_BITS | PIO_IRQ0_INTE_SM1_BITS;
@@ -101,26 +101,32 @@ int main()
     gpio_init(TOGGLE_PIN_R);
     gpio_set_dir(TOGGLE_PIN_R, GPIO_OUT);
 
+    const uint BUILTIN_LED = 25;
+    gpio_init(BUILTIN_LED);
+    gpio_set_dir(BUILTIN_LED, GPIO_OUT);
+
+    gpio_put(BUILTIN_LED, 1);
+
     // needed for printf
     stdio_init_all();
     // the A of the rotary encoder 0 is connected to GPIO 0, B to GPIO 1
-    rotary_encoder_init(0,0);
+    // rotary_encoder_init(0,0);
     // the A of the rotary encoder 1 is connected to GPIO 26, B to GPIO 27
-    rotary_encoder_init(26,1);
+    rotary_encoder_init(2,1);
 
     // track rotations
     int prev_rotationL = rotationL;
     int prev_rotationR = rotationR;
 
+
     // infinite loop to print the current rotation
 
     while (true)
     {
-        gpio_xor_mask((1 << TOGGLE_PIN_R));
         if (rotationL != prev_rotationL || rotationR != prev_rotationR)
         {
             printf("%d | %d\n",rotationL,rotationR);
-            gpio_xor_mask(((rotationL != prev_rotationL) << TOGGLE_PIN_L) | ((rotationR != prev_rotationR) << TOGGLE_PIN_R));
+            gpio_xor_mask(((rotationL != prev_rotationL) << TOGGLE_PIN_R) | ((rotationR != prev_rotationR) << TOGGLE_PIN_L));
             prev_rotationL = rotationL;
             prev_rotationR = rotationR;
         }
