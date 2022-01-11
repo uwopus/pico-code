@@ -27,6 +27,11 @@ jobs:
         repository: raspberrypi/pico-sdk
         ref: master
         path: pico-sdk
+    
+    - name: arm-none-eabi-gcc
+      uses: fiam/arm-none-eabi-gcc@v1
+      with:
+        release: '9-2019-q4'
 
     - name: Checkout pico-sdk submodules
       working-directory: ${{github.workspace}}/pico-sdk
