@@ -73,7 +73,6 @@ dkms.conf
 *.lai
 
 # Executables
-.vscode/
 ### CMake ###
 CMakeLists.txt.user
 CMakeCache.txt

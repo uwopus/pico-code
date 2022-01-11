@@ -1,0 +1,8 @@
+{
+    "cmake.configureOnOpen": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "files.associations": {
+        "stdlib.h": "c",
+        "opus_comms.h": "c"
+    }
+}
