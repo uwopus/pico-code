@@ -20,10 +20,16 @@ add_executable(${NAME}
 
 # include_directories(opus_pwm)
 add_subdirectory(opus_pwm)
-add_subdirectory(opus_pio_encoder)
+add_subdirectory(opus_encoder)
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
 # include(opus_pwm/opus_pwm)
+
+
+
+# enable usb output, disable uart output
+pico_enable_stdio_usb(pico_code 1)
+pico_enable_stdio_uart(pico_code 0)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${NAME})
@@ -31,6 +37,7 @@ pico_add_extra_outputs(${NAME})
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
 opus_pwm
+opus_encoder
 )
 
 

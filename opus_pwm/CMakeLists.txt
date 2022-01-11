@@ -1,6 +1,4 @@
-
-
-add_library(opus_pwm opus_pwm.c opus_pwm.h)
+add_library(opus_pwm opus_pwm.c)
 
 # pull in common dependencies and additional pwm hardware support
 target_link_libraries(opus_pwm pico_stdlib hardware_pwm)
