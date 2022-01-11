@@ -67,5 +67,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: binary
-        path: build/*.uf2
+        path: ${{github.workspace}}/pico-code/build/pico_code.uf2
         retention-days: 5
