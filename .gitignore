@@ -102,4 +102,6 @@ build
 # demos folder
 demos/
 
+.cortex*
+
 # End of https://www.toptal.com/developers/gitignore/api/pico8,cmake,c++,c
