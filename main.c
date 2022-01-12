@@ -7,8 +7,9 @@ int main() {
     comms_init(false);
 
     while(true){
-        send_data(&data, 1);
+        receive_data(&data, 1);
         data++;
-        sleep_us(10);
+        send_data(&data, 1);
+        sleep_ms(10);
     }    
 }
