@@ -30,7 +30,7 @@ int main() {
     stdio_init_all();
     printf("\nPWM duty cycle measurement example\n");
 
-    uint32_t count = 0;
+    float count = 0;
 
 
     /* How this works is each encoder channel is split into 4 sections
@@ -45,27 +45,45 @@ int main() {
 
         */
 
-       uint num_of_rotations = 0;
-       printf("Rotations: %d\n",num_of_rotations);
-        bool reverse = false;
+    uint num_of_rotations = 0;
+    printf("Rotations: %d\n",num_of_rotations);
+    bool reverse = false;
+
+    gpio_init(pENCODER_A);
+    gpio_init(pENCODER_B);
+
+    gpio_set_dir(pENCODER_A,GPIO_OUT);
+    gpio_set_dir(pENCODER_B,GPIO_OUT);
 
     while(1) {
-        // Read in the desired motor velocity from adc
+        // Read in the desired motor velocity from pwm
         float duty_cycle = measure_duty_cycle(pMEASURE);
-        // Convert adc readings to this arbitrary velocity
-        uint motor_vel = 2 * MAX_FAKE_VEL * duty_cycle;
 
+        float motor_vel = 0;
 
-        if (motor_vel - MAX_FAKE_VEL >= 0) //meaning requested a positive velocity
+        if (duty_cycle > 0.46 && duty_cycle < 0.54) //dead zone
         {
-            motor_vel -= MAX_FAKE_VEL; // Need to fix around the 50% amount
+            motor_vel = 0;
             reverse = false;
         }
-        else//meaning negative velocity
+        else
         {
-            motor_vel = -1*(motor_vel - MAX_FAKE_VEL); // this will still give motor_vel as positive since the condition to get here makes sure of it
-            reverse = true;
+            motor_vel = 2 * MAX_FAKE_VEL * duty_cycle;
+            if (motor_vel - MAX_FAKE_VEL >= 0) //meaning requested a positive velocity
+            {
+                motor_vel -= MAX_FAKE_VEL; // Need to fix around the 50% amount
+                reverse = false;
+            }
+            else//meaning negative velocity
+            {
+                motor_vel = -1*(motor_vel - MAX_FAKE_VEL); // this will still give motor_vel as positive since the condition to get here makes sure of it
+                reverse = true;
+            }
         }
+
+
+
+        
 
 
         uint leadEncoder = 0; // 0 off , maybe make this an enum
@@ -106,12 +124,18 @@ int main() {
 
         if (count > 4*MAX_FAKE_VEL){ // Want the count to go up by 
             count = 0;
-            num_of_rotations++;
+            if (reverse)
+            {
+                num_of_rotations--;
+            }
+            else
+            {
+                num_of_rotations++;
+            }
         }
         
         printf("Duty Reading: %.1f%% \n",duty_cycle*100.f);
         printf("Rotations: %d\n",num_of_rotations);
-
     }
     
 }
