@@ -51,7 +51,7 @@ int main() {
 
     while(1) {
         // Read in the desired motor velocity from adc
-        uint16_t duty_cycle = measure_duty_cycle(pMEASURE);
+        float duty_cycle = measure_duty_cycle(pMEASURE);
         // Convert adc readings to this arbitrary velocity
         uint motor_vel = 2 * MAX_FAKE_VEL * duty_cycle;
 
@@ -107,9 +107,10 @@ int main() {
         if (count > 4*MAX_FAKE_VEL){ // Want the count to go up by 
             count = 0;
             num_of_rotations++;
-            printf("Duty Reading: %.1f%% \n",duty_cycle*100.f);
-            printf("Rotations: %d\n",num_of_rotations);
         }
+        
+        printf("Duty Reading: %.1f%% \n",duty_cycle*100.f);
+        printf("Rotations: %d\n",num_of_rotations);
 
     }
     
