@@ -37,4 +37,5 @@ target_link_libraries(${NAME}
 opus_pwm
 opus_motor_controller_emulator
 hardware_adc
+hardware_clocks
 )

@@ -1,23 +1,34 @@
 #include "opus_pwm.h"
 #include "hardware/pwm.h"
+#include "hardware/clocks.h"
 #include "opus_fake_motor_controller.h"
 
-#define pADC 26 // Can only do 26,27,28,29
+#define pMEASURE 5
+
+float measure_duty_cycle(uint gpio) {
+    // Only the PWM B pins can be used as inputs.
+    assert(pwm_gpio_to_channel(gpio) == PWM_CHAN_B);
+    uint slice_num = pwm_gpio_to_slice_num(gpio);
+
+    // Count once for every 100 cycles the PWM B input is high
+    pwm_config cfg = pwm_get_default_config();
+    pwm_config_set_clkdiv_mode(&cfg, PWM_DIV_B_HIGH);
+    pwm_config_set_clkdiv(&cfg, 100);
+    pwm_init(slice_num, &cfg, false);
+    gpio_set_function(gpio, GPIO_FUNC_PWM);
+
+    pwm_set_enabled(slice_num, true);
+    sleep_ms(10);
+    pwm_set_enabled(slice_num, false);
+    float counting_rate = clock_get_hz(clk_sys) / 100;
+    float max_possible_count = counting_rate * 0.01;
+    return pwm_get_counter(slice_num) / max_possible_count;
+}
+
 
 int main() {
     stdio_init_all();
-
-    adc_init();
-    
-    // Make sure GPIO is high-impedance, no pullups etc
-    adc_gpio_init(pADC);
-    // Select ADC input 0 (GPIO26)
-    adc_select_input(pADC-26);
-
-    const float conversion_factor = MAX_FAKE_VEL * 2 / (1 << 12);
-    uint16_t result = adc_read();
-
-    init_fake_encoder_output();
+    printf("\nPWM duty cycle measurement example\n");
 
     uint32_t count = 0;
 
@@ -40,9 +51,9 @@ int main() {
 
     while(1) {
         // Read in the desired motor velocity from adc
-        uint16_t result = adc_read();
+        uint16_t duty_cycle = measure_duty_cycle(pMEASURE);
         // Convert adc readings to this arbitrary velocity
-        uint motor_vel = conversion_factor * result;
+        uint motor_vel = 2 * MAX_FAKE_VEL * duty_cycle;
 
 
         if (motor_vel - MAX_FAKE_VEL >= 0) //meaning requested a positive velocity
@@ -96,6 +107,7 @@ int main() {
         if (count > 4*MAX_FAKE_VEL){ // Want the count to go up by 
             count = 0;
             num_of_rotations++;
+            printf("Duty Reading: %.1f%% \n",duty_cycle*100.f);
             printf("Rotations: %d\n",num_of_rotations);
         }
 
