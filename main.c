@@ -1,6 +1,7 @@
 #include "opus_pwm.h"
 #include "hardware/pwm.h"
 #include "opus_encoder.h"
+#include "opus_shared_definitions.h"
 
 int main() {
 
@@ -27,8 +28,8 @@ int main() {
 
     while(1) {
 
-        count_left = get_encoder_count(ENCODER_LEFT);
-        count_right = get_encoder_count(ENCODER_RIGHT);
+        count_left = get_encoder_count(LEFT);
+        count_right = get_encoder_count(RIGHT);
 
         if(prev_count_left != count_left){
             prev_count_left = count_left;

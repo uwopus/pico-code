@@ -30,14 +30,14 @@ void init_encoders()//Initialise
     quadrature_encoder_program_init(pio_R, sm_R, offset_R, PIN_AB_R, 0);
 }
 
-int get_encoder_count(uint8_t side) // Side is LEFT_ENCODER or RIGHT_ENCODER
+int get_encoder_count(side_t side) // Side is LEFT_ENCODER or RIGHT_ENCODER
 {
     int32_t count = 0; // defaults to 0 if no response
-    if (side == ENCODER_LEFT)
+    if (side == LEFT)
     {
         count = quadrature_encoder_get_count(PIO_LEFT,PIO_SM_LEFT);
     }
-    else if (side == ENCODER_RIGHT)
+    else if (side == RIGHT)
     {
         count = quadrature_encoder_get_count(PIO_RIGHT,PIO_SM_RIGHT);
     }

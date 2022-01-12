@@ -13,8 +13,10 @@
 // This file includes the function to be used called quadrature_encoder_get_count(PIO pio, uint sm)
 #include "opus_encoder.pio.h"
 
-#define ENCODER_LEFT 0
-#define ENCODER_RIGHT 1
+// Include side shared definitions
+#include "opus_shared_definitions.h"
+
+
 #define PIO_LEFT pio0
 #define PIO_RIGHT pio1
 #define PIO_SM_LEFT 0
@@ -22,7 +24,7 @@
 
 void init_encoders();//Initialise 
 
-int get_encoder_count(uint8_t side); // Side is LEFT_ENCODER or RIGHT_ENCODER
+int get_encoder_count(side_t side); // Side is LEFT_ENCODER or RIGHT_ENCODER
 
 
 

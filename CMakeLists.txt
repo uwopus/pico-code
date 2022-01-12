@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.12)
 # Change your executable name to something creative!
 set(NAME pico_code) # <-- Name your project/executable here!
 
+set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 include(pico_sdk_import.cmake)
 
 # Gooey boilerplate
@@ -17,6 +19,8 @@ pico_sdk_init()
 add_executable(${NAME}
     main.c # <-- Add source files here!
 )
+
+target_include_directories(pico_code PUBLIC ${INCLUDE_DIR})
 
 # include_directories(opus_pwm)
 add_subdirectory(opus_pwm)
