@@ -1,7 +1,5 @@
-
-
-add_library(opus_pwm opus_pwm.c opus_pwm.h)
+add_library(opus_pwm opus_pwm.c)
 
 # pull in common dependencies and additional pwm hardware support
 target_link_libraries(opus_pwm pico_stdlib hardware_pwm)
-target_include_directories(opus_pwm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(opus_pwm PUBLIC ${INCLUDE_DIR})
