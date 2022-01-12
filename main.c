@@ -36,6 +36,8 @@ int main() {
 
        uint num_of_rotations = 0;
        printf("Rotations: %d\n",num_of_rotations);
+        bool reverse = false;
+
     while(1) {
         // Read in the desired motor velocity from adc
         uint16_t result = adc_read();
@@ -58,7 +60,6 @@ int main() {
         uint leadEncoder = 0; // 0 off , maybe make this an enum
         uint lagEncoder = 0;
 
-        bool reverse = false; // not sure how reverse is set so for now its like this
 
         if (count < MAX_FAKE_VEL)
         {
