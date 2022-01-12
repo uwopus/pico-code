@@ -4,6 +4,10 @@
     "files.associations": {
         "stdlib.h": "c",
         "opus_comms.h": "c",
-        "spi.h": "c"
+        "spi.h": "c",
+        "opus_encoder.h": "c",
+        "opus_shared_definitions.h": "c",
+        "pwm.h": "c",
+        "opus_pwm.h": "c"
     }
 }
