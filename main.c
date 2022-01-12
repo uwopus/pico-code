@@ -14,7 +14,7 @@ int main() {
     // Select ADC input 0 (GPIO26)
     adc_select_input(pADC-26);
 
-    const float conversion_factor = MAX_FAKE_VEL / (1 << 12);
+    const float conversion_factor = MAX_FAKE_VEL * 2 / (1 << 12);
     uint16_t result = adc_read();
 
     init_fake_encoder_output();
@@ -42,8 +42,18 @@ int main() {
         // Convert adc readings to this arbitrary velocity
         uint motor_vel = conversion_factor * result;
 
-        // Keep constant velocity for now
-        motor_vel = 1;
+
+        if (motor_vel - MAX_FAKE_VEL >= 0) //meaning requested a positive velocity
+        {
+            motor_vel -= MAX_FAKE_VEL; // Need to fix around the 50% amount
+            reverse = false;
+        }
+        else//meaning negative velocity
+        {
+            motor_vel = -1*(motor_vel - MAX_FAKE_VEL); // this will still give motor_vel as positive since the condition to get here makes sure of it
+            reverse = true;
+        }
+
 
         uint leadEncoder = 0; // 0 off , maybe make this an enum
         uint lagEncoder = 0;
