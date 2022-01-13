@@ -9,5 +9,6 @@
         "opus_shared_definitions.h": "c",
         "pwm.h": "c",
         "opus_pwm.h": "c"
-    }
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }

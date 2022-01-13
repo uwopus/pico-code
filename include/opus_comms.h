@@ -5,7 +5,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 
-#define MAX_PKT_SIZE UINT8_MAX
+#define MAX_PKT_SIZE 10
 
 typedef enum packet_types {
     INIT = 0, 

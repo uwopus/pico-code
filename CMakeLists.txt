@@ -12,6 +12,12 @@ project(${NAME} C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
+# Add -O0 to remove optimizations when using gcc
+IF(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+
 # Initialize the SDK
 pico_sdk_init()
 
@@ -42,11 +48,8 @@ pico_add_extra_outputs(${NAME})
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
 opus_pwm
-<<<<<<< HEAD
 opus_comms
-=======
 opus_encoder
->>>>>>> 4ea8ab6fb45964402b1af7c04b1dedd1b34c6bdf
 )
 
 

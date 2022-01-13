@@ -1,4 +1,5 @@
 #include "opus_comms.h"
+#include "string.h"
 
 #define OPUS_SPI_PORT spi0
 #define OPUS_BAUDRATE 500E3
@@ -50,7 +51,9 @@ void send_packet(opus_packet_type_t type, void *data, uint8_t len){
     packet.t_ms = to_ms_since_boot(absTime);
     packet.type = type;
     packet.len = len;
-    *packet.data = (uint8_t*) data;
+    memcpy(packet.data, data, len);
 
-    send_data(&packet, sizeof(packet));
+    void* pktPtr = (void*) &packet;
+    send_data(pktPtr, sizeof(opus_packet_t));
+
 }
