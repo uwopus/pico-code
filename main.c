@@ -9,9 +9,7 @@ int main() {
     comms_init(true);
 
     while(true){
-        receive_data(&data, 1);
-        data++;
-        send_data(&data, 1);
+        send_packet(ENC, &data, 1);
         sleep_us(10);
     }     
 }

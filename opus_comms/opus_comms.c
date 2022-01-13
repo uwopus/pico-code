@@ -43,3 +43,14 @@ void receive_data(uint8_t *dst, size_t len){
     spi_read_blocking(OPUS_SPI_PORT, 0x00, dst, len);
     gpio_put(pOPUS_SPI_ACTIVITY, false);
 }
+
+void send_packet(opus_packet_type_t type, void *data, uint8_t len){ 
+    opus_packet_t packet; 
+    absolute_time_t absTime = get_absolute_time();
+    packet.t_ms = to_ms_since_boot(absTime);
+    packet.type = type;
+    packet.len = len;
+    *packet.data = (uint8_t*) data;
+
+    send_data(&packet, sizeof(packet));
+}

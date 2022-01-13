@@ -16,9 +16,8 @@ typedef enum packet_types {
 } opus_packet_type_t;
 
 typedef struct packet {
-    uint16_t seq; // sequence number, monotonically increasing until wraparound 
+    uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
     opus_packet_type_t type;
-    bool isRequest; // if true, this is a request for that data. If false, this contains that data. 
     uint8_t len;
     uint8_t data[MAX_PKT_SIZE];
 } opus_packet_t;
