@@ -1,5 +1,7 @@
 #include "opus_comms.h"
 #include "string.h"
+#include "hardware/irq.h"
+#include "opus_shared_definitions.h"
 
 #define OPUS_SPI_PORT spi0
 #define OPUS_BAUDRATE 500E3
@@ -13,7 +15,20 @@
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
+void packet_available(){ 
+    sem_release(&comm_pkt_available_sem);
+    gpio_xor_mask(1 << 8);
+    // uint16_t data = spi0_hw->dr;
+    hw_clear_bits(spi0_hw->imsc, SPI_SSPIMSC_RXIM_BITS);
+    irq_clear(SPI0_IRQ);
+
+}
+
 void comms_init(bool is_slave) {
+
+    gpio_init(8);
+    gpio_set_dir(8, GPIO_OUT);
+
     spi_init(OPUS_SPI_PORT, OPUS_BAUDRATE);
     gpio_init_mask(OPUS_SPI_PINS | (1 << pOPUS_SPI_ACTIVITY));
     gpio_set_function(pOPUS_SPI_SCK, GPIO_FUNC_SPI);
@@ -31,6 +46,16 @@ void comms_init(bool is_slave) {
         gpio_set_dir(pOPUS_SPI_MOSI, GPIO_OUT);
         gpio_set_dir(pOPUS_SPI_CS, GPIO_OUT);
     }
+
+    // set up IRQ for incoming data.
+    sem_init(&comm_pkt_available_sem, 0, 1); 
+    irq_set_enabled(SPI0_IRQ, true);
+    irq_set_exclusive_handler(SPI0_IRQ, packet_available);
+
+    // Enable SPI0 RX IRQ
+    spi0_hw->imsc |= SPI_SSPIMSC_RXIM_BITS;
+    // spi0_hw->cr0 |= 0b1111 & SPI_SSPCR0_DSS_BITS;
+
 }
 
 void send_data(const uint8_t *src, size_t len){
