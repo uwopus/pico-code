@@ -2,6 +2,7 @@
 #include "hardware/pwm.h"
 #include "opus_encoder.h"
 #include "opus_shared_definitions.h"
+#include "opus_led.h"
 
 int main() {
 

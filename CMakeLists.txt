@@ -25,6 +25,7 @@ target_include_directories(pico_code PUBLIC ${INCLUDE_DIR})
 # include_directories(opus_pwm)
 add_subdirectory(opus_pwm)
 add_subdirectory(opus_encoder)
+add_subdirectory(opus_led)
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
 # include(opus_pwm/opus_pwm)
@@ -42,6 +43,7 @@ pico_add_extra_outputs(${NAME})
 target_link_libraries(${NAME}
 opus_pwm
 opus_encoder
+opus_led
 )
 
 
