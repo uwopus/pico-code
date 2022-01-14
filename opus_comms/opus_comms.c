@@ -1,5 +1,6 @@
 #include "opus_comms.h"
 #include "string.h"
+#include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "opus_shared_definitions.h"
 
@@ -14,20 +15,15 @@
 #define pOPUS_SPI_ACTIVITY 8 // on while RX or TX on SPI. We should have put little LEDs on MOSI/MISO...
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
-
-void packet_available(){ 
-    sem_release(&comm_pkt_available_sem);
-    gpio_xor_mask(1 << 8);
-    // uint16_t data = spi0_hw->dr;
-    hw_clear_bits(spi0_hw->imsc, SPI_SSPIMSC_RXIM_BITS);
-    irq_clear(SPI0_IRQ);
-
+void dma_irq() {
+    gpio_xor_mask(1 << 11);
+    dma_irqn_acknowledge_channel(0, spi_dma_rx);
+    irq_clear(DMA_IRQ_0);
 }
-
 void comms_init(bool is_slave) {
 
-    gpio_init(8);
-    gpio_set_dir(8, GPIO_OUT);
+    gpio_init(11);
+    gpio_set_dir(11, GPIO_OUT);
 
     spi_init(OPUS_SPI_PORT, OPUS_BAUDRATE);
     gpio_init_mask(OPUS_SPI_PINS | (1 << pOPUS_SPI_ACTIVITY));
@@ -47,14 +43,30 @@ void comms_init(bool is_slave) {
         gpio_set_dir(pOPUS_SPI_CS, GPIO_OUT);
     }
 
-    // set up IRQ for incoming data.
-    sem_init(&comm_pkt_available_sem, 0, 1); 
-    irq_set_enabled(SPI0_IRQ, true);
-    irq_set_exclusive_handler(SPI0_IRQ, packet_available);
 
-    // Enable SPI0 RX IRQ
-    spi0_hw->imsc |= SPI_SSPIMSC_RXIM_BITS;
-    // spi0_hw->cr0 |= 0b1111 & SPI_SSPCR0_DSS_BITS;
+    // Setup DMA
+    spi_dma_rx = dma_claim_unused_channel(true); // Will panic if no channel!
+    dma_channel_config cnfg = dma_channel_get_default_config(spi_dma_rx);
+    channel_config_set_transfer_data_size(&cnfg, DMA_SIZE_8);
+    channel_config_set_dreq(&cnfg, spi_get_dreq(OPUS_SPI_PORT, false));
+    channel_config_set_read_increment(&cnfg, false);
+    channel_config_set_write_increment(&cnfg, true); 
+    // channel_config_set_ring(&cnfg, true, 8);
+    channel_config_set_irq_quiet(&cnfg, false); // irq on every transfer
+
+    dma_irqn_set_channel_enabled(0, spi_dma_rx, true);
+
+
+    dma_channel_configure(spi_dma_rx,
+                          &cnfg, 
+                          spi_rx_buf,
+                          &spi_get_hw(OPUS_SPI_PORT)->dr,
+                          sizeof(opus_packet_t),
+                          true); // start
+
+    irq_set_enabled(DMA_IRQ_0, true);
+    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq); 
+
 
 }
 

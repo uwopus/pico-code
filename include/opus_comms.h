@@ -22,6 +22,9 @@ typedef struct packet {
     uint8_t data[MAX_PKT_SIZE];
 } opus_packet_t;
 
+uint spi_dma_rx;
+uint8_t spi_rx_buf[sizeof(opus_packet_t)];
+
 void comms_init(bool is_slave);
 void send_data(const uint8_t *src, size_t len);
 void receive_data(uint8_t *dst, size_t len);
