@@ -5,7 +5,7 @@
 #ifndef OPUS_SHARED_DEFINITIONS_H
 #define OPUS_SHARED_DEFINITIONS_H
 
-#include "pico/sem.h"
+#include "pico/sync.h"
 
 
 typedef enum {
@@ -14,6 +14,8 @@ typedef enum {
 }side_t;
 
 semaphore_t comm_pkt_available_sem;
-uint8_t flags;
+
+mutex_t ENCODER_L_MTX;
+mutex_t ENCODER_R_MTX;
 
 #endif

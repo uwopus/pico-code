@@ -8,7 +8,8 @@
         "opus_encoder.h": "c",
         "opus_shared_definitions.h": "c",
         "pwm.h": "c",
-        "opus_pwm.h": "c"
+        "opus_pwm.h": "c",
+        "dma.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }
