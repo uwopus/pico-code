@@ -19,15 +19,14 @@ void init_encoders()//Initialise
     PIO pio_L = PIO_LEFT;
     uint sm_L = PIO_SM_LEFT;
 
-    uint offset_L = pio_add_program(pio_L, &quadrature_encoder_program);
-    quadrature_encoder_program_init(pio_L, sm_L, offset_L, PIN_AB_L, 0);
+    uint program_offset = pio_add_program(pio_L, &quadrature_encoder_program);
+    quadrature_encoder_program_init(pio_L, sm_L, program_offset, PIN_AB_L, 0);
 
     
     PIO pio_R = PIO_RIGHT;
     uint sm_R = PIO_SM_RIGHT;
 
-    uint offset_R = pio_add_program(pio_R, &quadrature_encoder_program);
-    quadrature_encoder_program_init(pio_R, sm_R, offset_R, PIN_AB_R, 0);
+    quadrature_encoder_program_init(pio_R, sm_R, program_offset, PIN_AB_R, 0);
 }
 
 int get_encoder_count(side_t side) // Side is LEFT_ENCODER or RIGHT_ENCODER
