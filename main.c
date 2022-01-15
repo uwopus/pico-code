@@ -27,6 +27,6 @@ int main() {
 
         gpio_xor_mask(1 << PICO_DEFAULT_LED_PIN);
 
-        sleep_ms(50);
+        sleep_ms(1);
     }     
 }

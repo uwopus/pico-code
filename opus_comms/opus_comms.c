@@ -97,7 +97,7 @@ void parse_packet(){
         case PKT_TYPE_HEARTBEAT:
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
-        case PKT_TYPE_PWM: 
+        case PKT_TYPE_VEL: 
             // send PWM data to motors
             break;
         case PKT_TYPE_ENC:

@@ -12,7 +12,7 @@ typedef enum packet_types {
     PKT_TYPE_INIT = 0, 
     PKT_TYPE_HEARTBEAT = 1,
     PKT_TYPE_STATE = 2, 
-    PKT_TYPE_PWM = 3, 
+    PKT_TYPE_VEL = 3, 
     PKT_TYPE_ENC = 4
 } opus_packet_type_t;
 
@@ -21,6 +21,7 @@ typedef struct packet {
     opus_packet_type_t type;
     uint8_t len;
     uint8_t data[MAX_PKT_SIZE];
+    // uint8_t crc;
 } opus_packet_t;
 
 uint spi_dma_rx;
