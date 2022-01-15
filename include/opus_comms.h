@@ -4,15 +4,16 @@
 #include "stdint.h"
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "pico/sync.h"
 
 #define MAX_PKT_SIZE 10
 
 typedef enum packet_types {
-    INIT = 0, 
-    HEARTBEAT = 1,
-    STATE = 2, 
-    PWM = 3, 
-    ENC = 4
+    PKT_TYPE_INIT = 0, 
+    PKT_TYPE_HEARTBEAT = 1,
+    PKT_TYPE_STATE = 2, 
+    PKT_TYPE_PWM = 3, 
+    PKT_TYPE_ENC = 4
 } opus_packet_type_t;
 
 typedef struct packet {
@@ -23,13 +24,17 @@ typedef struct packet {
 } opus_packet_t;
 
 uint spi_dma_rx;
-uint8_t spi_rx_buf[sizeof(opus_packet_t)];
+
+union {
+    uint8_t buf[sizeof(opus_packet_t)];
+    opus_packet_t rx_packet;
+} spi_incoming_packet;
+
+semaphore_t sem_spi_rx;
 
 void comms_init(bool is_slave);
-void send_data(const uint8_t *src, size_t len);
-void receive_data(uint8_t *dst, size_t len);
 
-void parse_packet(opus_packet_t packet);
+void parse_packet();
 void send_packet(opus_packet_type_t type, void *data, uint8_t len);
 void update();
 #endif

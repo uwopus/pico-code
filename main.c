@@ -20,9 +20,12 @@ int main() {
         // }
         // receive_data(&data[0], 8);s
 
-        gpio_xor_mask(1 << PICO_DEFAULT_LED_PIN);
+        if (sem_acquire_timeout_ms(&sem_spi_rx, 0)){
+            // parse packet. 
+            parse_packet();
+        }
 
-        gpio_put(8, spi_rx_buf[5] == 0);
+        gpio_xor_mask(1 << PICO_DEFAULT_LED_PIN);
 
         sleep_ms(50);
     }     
