@@ -7,6 +7,10 @@
 
 #include "opus_encoder.h"
 
+// Declare Mutexs
+mutex_t ENCODER_L_MTX;
+mutex_t ENCODER_R_MTX;
+
 void init_encoders()//Initialise 
 {
     // Base pin to connect the A phase of the encoder.
@@ -18,7 +22,6 @@ void init_encoders()//Initialise
     mutex_init(&ENCODER_L_MTX);
     mutex_init(&ENCODER_R_MTX);
 
-    // stdio_init_all(); //Not sure if this should remain here or go else where
 
     PIO pio_L = PIO_LEFT;
     uint sm_L = PIO_SM_LEFT;

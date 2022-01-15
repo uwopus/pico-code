@@ -2,6 +2,10 @@
 #include "hardware/pwm.h"
 #include "opus_encoder.h"
 #include "opus_shared_definitions.h"
+#include "pico/multicore.h"
+
+void core1_main();
+void init_opus();
 
 int main() {
 
@@ -12,10 +16,8 @@ int main() {
     // set_pwm(pPWM_LEFT_GPIO,0.5);
     // set_pwm(pPWM_RIGHT_GPIO,0.5);
 
-    printf("Program Started");
 
-
-    init_encoders();
+    init_opus();
 
 
     int32_t count_left = 0;
@@ -25,6 +27,8 @@ int main() {
     int32_t prev_count_right = 0;
 
     bool been_updated = true; // Start as true to print the count on init
+
+    multicore_launch_core1(core1_main);
 
     while(1) {
 
@@ -47,6 +51,13 @@ int main() {
         }
     }
     
+}
+
+void init_opus(){
+    stdio_init_all(); //Not sure if this should remain here or go else where
+    init_encoders();
+    printf("Opus Started");
+
 }
 
 void core1_main(){
