@@ -104,4 +104,6 @@ demos/
 
 .cortex*
 
+settings.json
+
 # End of https://www.toptal.com/developers/gitignore/api/pico8,cmake,c++,c

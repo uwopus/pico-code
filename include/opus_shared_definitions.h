@@ -15,7 +15,7 @@ typedef enum {
 
 semaphore_t comm_pkt_available_sem;
 
-mutex_t ENCODER_L_MTX;
-mutex_t ENCODER_R_MTX;
+extern mutex_t ENCODER_L_MTX;
+extern mutex_t ENCODER_R_MTX;
 
 #endif
