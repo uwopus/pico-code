@@ -1,6 +1,4 @@
 #include "opus_pwm.h"
-#include "hardware/pwm.h"
-#include "hardware/irq.h"
 #include "opus_comms.h"
 #include "opus_encoder.h"
 #include "opus_shared_definitions.h"
@@ -23,6 +21,11 @@ int main() {
     multicore_launch_core1(core1_main); // Control Loop Core. 
 
     while(1) {
+        if(sem_acquire_timeout_ms(&sem_spi_rx, 1)){
+            parse_packet();
+        }
+
+        sleep_ms(1);
 
     }
     
@@ -31,6 +34,7 @@ int main() {
 void init_opus(){
     stdio_init_all(); //Not sure if this should remain here or go else where
     init_encoders();
+    comms_init(true);
     printf("Opus Started");
 
 }

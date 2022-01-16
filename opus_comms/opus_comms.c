@@ -1,4 +1,5 @@
 #include "opus_comms.h"
+#include "opus_encoder.h"
 #include "string.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
@@ -72,25 +73,46 @@ void comms_init(bool is_slave) {
     sem_init(&sem_spi_rx, 0, 1);
 }
 
-void send_packet(opus_packet_type_t type, void *data, uint8_t len){ 
-    opus_packet_t packet; 
-    absolute_time_t absTime = get_absolute_time();
-    packet.t_ms = to_ms_since_boot(absTime);
-    packet.type = type;
-    packet.len = len;
-    memcpy(packet.data, data, len);
 
-    void* pktPtr = (void*) &packet;
-    send_data(pktPtr, sizeof(opus_packet_t));
+float get_float_from_bytes(uint8_t* bytes) {
+    union {
+        float f;
+        uint8_t conv_bytes[4];
+    } conv_union;
 
+    memcpy(conv_union.conv_bytes, bytes, 4);
+    return conv_union.f;
+} 
+
+void int32_to_buf(int32_t value, uint8_t* buf){ 
+    union {
+        int32_t i; 
+        uint8_t buf[4]; 
+    } conv_union;
+
+    conv_union.i = value; 
+    memcpy(buf, conv_union.buf, 4);
 }
 
 void parse_packet(){ 
-    opus_packet_t* pkt = &spi_incoming_packet.rx_packet;
+    opus_packet_t* inpkt = &spi_incoming_packet.rx_packet;
+
+    union {
+        opus_packet_t pkt;
+        uint8_t buf[sizeof(opus_packet_t)];
+    } returned_packet; 
 
     // do crc check. 
 
-    switch(pkt->type){ 
+    returned_packet.pkt.type = PKT_TYPE_ACK;
+    returned_packet.pkt.data[0] = inpkt->type;
+    returned_packet.pkt.data[1] = 1; // could be true/false for ACK/NACK. If needed.
+    returned_packet.pkt.len = 1;
+
+    int32_t l_enc_value;
+    int32_t r_enc_value;
+
+    switch(inpkt->type){ 
         case PKT_TYPE_INIT:
             // set the thing to the ready state. 
             break;
@@ -98,17 +120,26 @@ void parse_packet(){
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
         case PKT_TYPE_VEL: 
-            // send PWM data to motors
+            vel_setpoint_l = get_float_from_bytes(&inpkt->data[0]);
+            vel_setpoint_r = get_float_from_bytes(&inpkt->data[4]);
+            memcpy(&returned_packet.pkt.data[2], &inpkt->data[0], 4);
+            memcpy(&returned_packet.pkt.data[6], &inpkt->data[4], 4);
+            returned_packet.pkt.len = 10;
             break;
         case PKT_TYPE_ENC:
             // send back the accumulated encoder values
+            l_enc_value = get_encoder_count(LEFT);
+            r_enc_value = get_encoder_count(RIGHT);
+            int32_to_buf(l_enc_value, &returned_packet.pkt.data[2]);
+            int32_to_buf(r_enc_value, &returned_packet.pkt.data[6]);
+            returned_packet.pkt.len = 10;          
             break;
         case PKT_TYPE_STATE:
             // idk
             break;
     }
 
-    spi_write_blocking(OPUS_SPI_PORT, spi_incoming_packet.buf, sizeof(opus_packet_t));
+    spi_write_blocking(OPUS_SPI_PORT, returned_packet.buf, sizeof(opus_packet_t));
 
     // once we're done with the packet, re-activate the DMA!
     dma_channel_set_write_addr(spi_dma_rx, spi_incoming_packet.buf, true);

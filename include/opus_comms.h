@@ -10,10 +10,11 @@
 
 typedef enum packet_types {
     PKT_TYPE_INIT = 0, 
-    PKT_TYPE_HEARTBEAT = 1,
-    PKT_TYPE_STATE = 2, 
-    PKT_TYPE_VEL = 3, 
-    PKT_TYPE_ENC = 4
+    PKT_TYPE_ACK = 1,
+    PKT_TYPE_HEARTBEAT = 2,
+    PKT_TYPE_STATE = 3, 
+    PKT_TYPE_VEL = 4,
+    PKT_TYPE_ENC = 5
 } opus_packet_type_t;
 
 typedef struct packet {

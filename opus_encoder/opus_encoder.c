@@ -36,7 +36,7 @@ void init_encoders()//Initialise
     quadrature_encoder_program_init(pio_R, sm_R, program_offset, PIN_AB_R, 0);
 }
 
-int get_encoder_count(side_t side) // Side is LEFT_ENCODER or RIGHT_ENCODER
+int32_t get_encoder_count(side_t side) // Side is LEFT_ENCODER or RIGHT_ENCODER
 {
     int32_t count = 0; // defaults to 0 if no response
     if (side == LEFT)
