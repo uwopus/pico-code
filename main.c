@@ -62,6 +62,8 @@ void init_opus(){
 
 void core1_main(){
 
+    // Can change this to whatever main function to run on main. Right now it's just the same as the main0 to show encoders.
+
     int32_t count_left = 0;
     int32_t count_right = 0;
 
