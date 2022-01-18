@@ -15,8 +15,6 @@
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
-float vel_setpoint_r;
-float vel_setpoint_l;
 
 void dma_irq() {
     sem_release(&sem_spi_rx);
@@ -123,16 +121,30 @@ void parse_packet(){
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
         case PKT_TYPE_VEL: 
-            vel_setpoint_l = get_float_from_bytes(&inpkt->data[0]);
-            vel_setpoint_r = get_float_from_bytes(&inpkt->data[4]);
+            mutex_enter_blocking(&VEL_GOAL_L_MTX);
+            vel_goal_L = get_float_from_bytes(&inpkt->data[0]);
+            mutex_exit(&VEL_GOAL_L_MTX);
+
+
+            mutex_enter_blocking(&VEL_GOAL_R_MTX);
+            vel_goal_R = get_float_from_bytes(&inpkt->data[4]);
+            mutex_exit(&VEL_GOAL_R_MTX);
+
+            
             memcpy(&returned_packet.pkt.data[2], &inpkt->data[0], 4);
             memcpy(&returned_packet.pkt.data[6], &inpkt->data[4], 4);
             returned_packet.pkt.len = 10;
             break;
         case PKT_TYPE_ENC:
             // send back the accumulated encoder values
-            l_enc_value = get_encoder_count(LEFT);
-            r_enc_value = get_encoder_count(RIGHT);
+            mutex_enter_blocking(&ENCODER_L_MTX);
+            l_enc_value = get_encoder_count(LEFT).ticks;
+            mutex_exit(&ENCODER_L_MTX);
+
+            mutex_enter_blocking(&ENCODER_R_MTX);
+            r_enc_value = get_encoder_count(RIGHT).ticks;
+            mutex_exit(&ENCODER_R_MTX);
+
             int32_to_buf(l_enc_value, &returned_packet.pkt.data[2]);
             int32_to_buf(r_enc_value, &returned_packet.pkt.data[6]);
             returned_packet.pkt.len = 10;          

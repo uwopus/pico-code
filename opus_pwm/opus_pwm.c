@@ -1,14 +1,20 @@
-/**
- * Copyright (c) 2022 Opus
- * PWM Library for Motor Controller
- */
-#include "pico/stdlib.h"
-#include "hardware/pwm.h"
-#include "stdio.h"
 #include "opus_pwm.h"
 
 
-uint init_pwm(uint GPIO_Pin,uint cycles){
+uint init_pwm(side_t init_pwm_side,uint cycles){
+    uint GPIO_Pin = pPWM_LEFT_GPIO; // I know this redundant
+    if (init_pwm_side == LEFT)
+    {
+        GPIO_Pin = pPWM_LEFT_GPIO;
+    }
+    else if (init_pwm_side == RIGHT)
+    {
+        GPIO_Pin = pPWM_RIGHT_GPIO;
+    }
+    else
+    {
+        // printf("WARNING: No side for init_pwm");
+    }
     // Tell GPIO # They are allocated to the PWM
     gpio_set_function(GPIO_Pin, GPIO_FUNC_PWM);
     // Find out which PWM slice is connected to GPIO #
@@ -25,7 +31,20 @@ uint init_pwm(uint GPIO_Pin,uint cycles){
     return slice_num;
 }
 
-uint set_pwm(uint pin, float duty_cycle) {
+uint set_pwm(side_t set_pwm_side, float duty_cycle) {
+    uint GPIO_Pin = pPWM_LEFT_GPIO; // I know this redundant
+    if (set_pwm_side == LEFT)
+    {
+        GPIO_Pin = pPWM_LEFT_GPIO;
+    }
+    else if (set_pwm_side == RIGHT)
+    {
+        GPIO_Pin = pPWM_RIGHT_GPIO;
+    }
+    else
+    {
+        // printf("WARNING: No side for set_pwm");
+    }
     uint status = 0;
 
     if (duty_cycle > 1) {
@@ -38,6 +57,6 @@ uint set_pwm(uint pin, float duty_cycle) {
     
     int count = PWM_WRAP*duty_cycle;
         
-    pwm_set_gpio_level(pPWM_LEFT_GPIO, count);
+    pwm_set_gpio_level(GPIO_Pin, count);
     return status;
 }
