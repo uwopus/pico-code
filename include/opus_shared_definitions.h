@@ -13,7 +13,12 @@ typedef enum {
     RIGHT = 1
 }side_t;
 
+semaphore_t comm_pkt_available_sem;
+
 extern mutex_t ENCODER_L_MTX;
 extern mutex_t ENCODER_R_MTX;
+
+extern float vel_setpoint_l;
+extern float vel_setpoint_r;
 
 #endif
