@@ -13,7 +13,7 @@ typedef enum {
     RIGHT = 1
 }side_t;
 
-mutex_t ENCODER_L_MTX;
-mutex_t ENCODER_R_MTX;
+extern mutex_t ENCODER_L_MTX;
+extern mutex_t ENCODER_R_MTX;
 
 #endif

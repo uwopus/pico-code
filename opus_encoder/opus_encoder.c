@@ -7,6 +7,10 @@
 
 #include "opus_encoder.h"
 
+// Declare Mutexs
+mutex_t ENCODER_L_MTX;
+mutex_t ENCODER_R_MTX;
+
 void init_encoders()//Initialise 
 {
     // Base pin to connect the A phase of the encoder.
@@ -14,7 +18,10 @@ void init_encoders()//Initialise
     const uint PIN_AB_L = 20;
     const uint PIN_AB_R = 18;
 
-    stdio_init_all(); //Not sure if this should remain here or go else where
+    // Mutex inits
+    mutex_init(&ENCODER_L_MTX);
+    mutex_init(&ENCODER_R_MTX);
+
 
     PIO pio_L = PIO_LEFT;
     uint sm_L = PIO_SM_LEFT;
@@ -34,11 +41,15 @@ int get_encoder_count(side_t side) // Side is LEFT_ENCODER or RIGHT_ENCODER
     int32_t count = 0; // defaults to 0 if no response
     if (side == LEFT)
     {
+        mutex_enter_blocking(&ENCODER_L_MTX);
         count = quadrature_encoder_get_count(PIO_LEFT,PIO_SM_LEFT);
+        mutex_exit(&ENCODER_L_MTX);
     }
     else if (side == RIGHT)
     {
+        mutex_enter_blocking(&ENCODER_R_MTX);
         count = quadrature_encoder_get_count(PIO_RIGHT,PIO_SM_RIGHT);
+        mutex_exit(&ENCODER_R_MTX);
     }
     else
     {
