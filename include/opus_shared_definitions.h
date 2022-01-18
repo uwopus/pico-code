@@ -18,7 +18,7 @@ semaphore_t comm_pkt_available_sem;
 extern mutex_t ENCODER_L_MTX;
 extern mutex_t ENCODER_R_MTX;
 
-float vel_setpoint_l;
-float vel_setpoint_r;
+extern float vel_setpoint_l;
+extern float vel_setpoint_r;
 
 #endif

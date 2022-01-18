@@ -15,6 +15,9 @@
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
+float vel_setpoint_r;
+float vel_setpoint_l;
+
 void dma_irq() {
     sem_release(&sem_spi_rx);
     dma_irqn_acknowledge_channel(0, spi_dma_rx);
