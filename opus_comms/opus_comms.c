@@ -16,6 +16,15 @@
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
 
+uint spi_dma_rx;
+
+union {
+    uint8_t buf[sizeof(opus_packet_t)];
+    opus_packet_t rx_packet;
+} spi_incoming_packet;
+
+semaphore_t sem_spi_rx;
+
 void dma_irq() {
     sem_release(&sem_spi_rx);
     dma_irqn_acknowledge_channel(0, spi_dma_rx);

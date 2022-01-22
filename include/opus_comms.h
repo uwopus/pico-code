@@ -25,14 +25,6 @@ typedef struct packet {
     // uint8_t crc;
 } opus_packet_t;
 
-uint spi_dma_rx;
-
-union {
-    uint8_t buf[sizeof(opus_packet_t)];
-    opus_packet_t rx_packet;
-} spi_incoming_packet;
-
-semaphore_t sem_spi_rx;
 
 void comms_init(bool is_slave);
 

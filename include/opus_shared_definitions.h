@@ -25,7 +25,7 @@ typedef struct velocity_controller_parms{
     uint8_t D;
 }controller_t;
 
-semaphore_t comm_pkt_available_sem;
+extern semaphore_t sem_spi_rx;
 
 extern mutex_t ENCODER_L_MTX;
 extern mutex_t ENCODER_R_MTX;
