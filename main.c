@@ -10,14 +10,6 @@ void init_opus();
 
 int main() {
 
-    // init_pwm(pPWM_LEFT_GPIO, PWM_WRAP);
-    // init_pwm(pPWM_RIGHT_GPIO, PWM_WRAP);
-
-    // // Sample on how to change the PWM
-    // set_pwm(pPWM_LEFT_GPIO,0.5);
-    // set_pwm(pPWM_RIGHT_GPIO,0.5);
-
-
     init_opus();
     multicore_launch_core1(core1_main); // Control Loop Core. 
 
@@ -34,20 +26,34 @@ int main() {
 
 void init_opus(){
     stdio_init_all(); //Not sure if this should remain here or go else where
-    init_encoders();
+    // init_encoders();
     comms_init(true);
     printf("Opus Started");
-    init_velocity();
+    // init_velocity();
+    init_pwm(LEFT,PWM_WRAP);
+    // init_pwm(RIGHT,PWM_WRAP);
+    set_pwm(LEFT,0.5); // Init at 0.5 which is stop
+    // set_pwm(RIGHT,0.5); // Init at 0.5 which is stop
 }
 
 void core1_main(){ // velocity controller
-    float duty_L = 0.5; // I know don't need two but for readability maybe?
-    float duty_R = 0.5;
+
+    float duty_L = 0.15; // I know don't need two but for readability maybe?
+    float duty_R = 0.15;
+    float change = 0.0001;// 0.001;
     while (true)
     {
-        duty_L = generate_set_duty(LEFT);
+        if (duty_L > 0.2 || duty_L < 0.1)
+        {
+            change *= -1;
+        }
+        duty_L += change;
+        // duty_R += 0.01
+        // duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
-        duty_R = generate_set_duty(RIGHT);
-        set_pwm(RIGHT,duty_R);
+        // duty_R = generate_set_duty(RIGHT);
+        // set_pwm(RIGHT,duty_R);
+
+        sleep_ms(10);
     }
 }

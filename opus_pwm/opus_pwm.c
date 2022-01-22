@@ -20,11 +20,11 @@ uint init_pwm(side_t init_pwm_side,uint cycles){
     // Find out which PWM slice is connected to GPIO #
     uint slice_num = pwm_gpio_to_slice_num(GPIO_Pin);
 
+    // Set the clock division with haveing wrap as max to get 100Hz
+    pwm_set_clkdiv(slice_num,19.07f); 
+
     // Set period of # cycles (0 to cycles inclusive)
     pwm_set_wrap(slice_num, cycles);
-
-    // Set channel # output high for cycles/2 cycles before dropping
-    set_pwm(GPIO_Pin, 0.5);
 
     // Set the PWM running
     pwm_set_enabled(slice_num, true);
