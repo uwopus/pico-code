@@ -94,6 +94,8 @@ float get_cur_vel(side_t cur_vel_side)
     
     float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
     velocity = (rotations * GEAR_RATIO * RADIUS * M_TWOPI) / ((float)(delta_time * 1E-6));
+    printf("Current Velocity: %5.2f [m/s]\n\r",velocity);
+
 
     return velocity;
 }
@@ -128,7 +130,7 @@ static inline float saturate(float value){
     else if (value < -1){
         return -1.0;
     }
-    return 0.0;
+    return value;
 }
 
 static inline float map(float value){ // map from -1 - 1 -> 0.1 - 0.2
