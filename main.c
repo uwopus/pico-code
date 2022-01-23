@@ -26,10 +26,10 @@ int main() {
 
 void init_opus(){
     stdio_init_all(); //Not sure if this should remain here or go else where
-    // init_encoders();
+    init_encoders();
     comms_init(true);
     printf("Opus Started");
-    // init_velocity();
+    init_velocity();
     init_pwm(LEFT,PWM_WRAP);
     // init_pwm(RIGHT,PWM_WRAP);
     set_pwm(LEFT,0.5); // Init at 0.5 which is stop
@@ -38,9 +38,15 @@ void init_opus(){
 
 void core1_main(){ // velocity controller
 
-    float duty_L = 0.15; // I know don't need two but for readability maybe?
+    float duty_L = 0.16; // I know don't need two but for readability maybe?
     float duty_R = 0.15;
-    float change = 0.0001;// 0.001;
+    float change = 0.000;// 0.0001;
+
+
+    mutex_enter_blocking(&VEL_GOAL_L_MTX);
+    vel_goal_L = 0.01;
+    mutex_exit(&VEL_GOAL_L_MTX);
+
     while (true)
     {
         if (duty_L > 0.2 || duty_L < 0.1)
@@ -53,7 +59,12 @@ void core1_main(){ // velocity controller
         set_pwm(LEFT,duty_L);
         // duty_R = generate_set_duty(RIGHT);
         // set_pwm(RIGHT,duty_R);
+        float cur_vel = get_cur_vel(LEFT);
 
+        int32_t ticks = get_encoder_count(LEFT).ticks;
+
+        printf("Current Velocity: %5.2f [m/s]\n\r",cur_vel);
+        printf("Current Ticks: %d\n\r",ticks);
         sleep_ms(10);
     }
 }

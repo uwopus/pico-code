@@ -11,12 +11,18 @@ mutex_t VEL_GOAL_L_MTX;
 mutex_t VEL_GOAL_R_MTX;
 
 // Declare Velocities That are shared with comms
-float vel_goal_R;
-float vel_goal_L;
+float vel_goal_L; // Linear velocity m/s
+float vel_goal_R; // Linear velocity m/s
 
 // Controller Params Init
 controller_t controller_params_L;
 controller_t controller_params_R;
+
+encoder_t encoder_hist_L[ENC_HIST_BUFF_LEN];
+encoder_t encoder_hist_R[ENC_HIST_BUFF_LEN];
+
+
+uint8_t hist_indx;
 
 void init_velocity() // Initialise 
 {
@@ -38,8 +44,16 @@ void init_velocity() // Initialise
     controller_params_L.P = 1; // These need to be set somehow by the zero for easy prototyping
     controller_params_R.P = 1;
 
+    hist_indx = 0;
 }
 
+
+void update_hist(){
+    encoder_hist_L[hist_indx] = get_encoder_count(LEFT);
+    encoder_hist_R[hist_indx] = get_encoder_count(RIGHT);
+
+    hist_indx = (hist_indx + 1) % ENC_HIST_BUFF_LEN;
+}
 
 static float get_goal_velocity(side_t side_to_update) // Static update velocity function that should only exist in this file
 {
@@ -66,18 +80,29 @@ static float get_goal_velocity(side_t side_to_update) // Static update velocity 
 float get_cur_vel(side_t cur_vel_side)
 {
     float velocity = 0;
-    encoder_t cur_encd;
-    encoder_t nxt_encd;
-    cur_encd = get_encoder_count(cur_vel_side);
-    nxt_encd = get_encoder_count(cur_vel_side);
+    // encoder_t cur_encd;
+    // encoder_t nxt_encd;
+    // cur_encd = get_encoder_count(cur_vel_side);
+    // // sleep_us(500);
+    // nxt_encd = get_encoder_count(cur_vel_side);
+    // encoder_t test_encd = get_encoder_count(cur_vel_side);
+    encoder_t test_test_encd = get_encoder_count(cur_vel_side);
+
+    //test code
+    printf("test_test_encd_time: %d\n\r",test_test_encd.time);
+    return 0.f;
 
     // Calculate velocity
-    int32_t delta_ticks = (cur_encd.ticks - nxt_encd.ticks);
-    int64_t delta_time = absolute_time_diff_us(cur_encd.time,nxt_encd.time);
-    float rotations = ((float) delta_ticks) * TICKS_TO_ROTATIONS;
-    velocity = rotations * RADIUS * M_TWOPI / ((float)delta_time);
+    // int32_t delta_ticks = (nxt_encd.ticks - cur_encd.ticks);
+    // int64_t delta_time = absolute_time_diff_us(cur_encd.time,nxt_encd.time);
+    // int64_t delta_time = nxt_encd.time - cur_encd.time;
+    // printf("cur_encd_time: %d | nxt_encd_time: %d\n\r",cur_encd.time,nxt_encd.time);
+    // printf("d_time: %d [us] | d_ticks: %d \n\r",delta_time,delta_ticks);
+    // printf("test_encd_time: %d\n\r",test_encd.time);
+    // float rotations = ((float) delta_ticks) * TICKS_TO_ROTATIONS;
+    // velocity = rotations * GEAR_RATIO * RADIUS * M_TWOPI / ((float)(delta_time * 10^-12));
 
-    return velocity;
+    // return velocity;
 }
 
 float get_error(side_t error_side)
@@ -113,8 +138,8 @@ static inline float saturate(float value){
     return 0.0;
 }
 
-static inline float map(float value){ // assuming input is from -1.0  to 1.0
-    return value / 2 + 0.5;
+static inline float map(float value){ // map from -1 - 1 -> 0.1 - 0.2
+    return value / 20 + 0.15;
 }
 
 float generate_set_duty(side_t duty_side) // This is the controller

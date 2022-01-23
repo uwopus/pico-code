@@ -21,6 +21,8 @@
 
 #define TICKS_TO_ROTATIONS 1992.6
 #define RADIUS 0.01 // in m, maybe this should be passed in by the zero
+#define GEAR_RATIO (10.f/80.f) // 
+#define ENC_HIST_BUFF_LEN 5 
 
 void init_velocity(); // Initialise
 
