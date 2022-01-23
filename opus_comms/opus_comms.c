@@ -76,6 +76,16 @@ void comms_init(bool is_slave) {
     sem_init(&sem_spi_rx, 0, 1);
 }
 
+void get_bytes_from_float(float value, uint8_t* buf) {
+    union {
+        float f;
+        uint8_t conv_bytes[sizeof(float)];
+    } conv_union;
+
+    conv_union.f = value;
+    memcpy(buf, conv_union.conv_bytes, sizeof(float));    
+} 
+
 
 float get_float_from_bytes(uint8_t* bytes) {
     union {
@@ -107,6 +117,7 @@ void parse_packet(){
 
     // do crc check. 
 
+    returned_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
     returned_packet.pkt.type = PKT_TYPE_ACK;
     returned_packet.pkt.data[0] = inpkt->type;
     returned_packet.pkt.data[1] = 1; // could be true/false for ACK/NACK. If needed.
@@ -115,6 +126,9 @@ void parse_packet(){
     int32_t l_enc_value;
     int32_t r_enc_value;
 
+    float l_vel_value = 0.24; 
+    float r_vel_value = 0.11; // for testing only!
+
     switch(inpkt->type){ 
         case PKT_TYPE_INIT:
             // set the thing to the ready state. 
@@ -122,13 +136,18 @@ void parse_packet(){
         case PKT_TYPE_HEARTBEAT:
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
-        case PKT_TYPE_VEL: 
+        case PKT_TYPE_SET_VEL: 
             vel_setpoint_l = get_float_from_bytes(&inpkt->data[0]);
             vel_setpoint_r = get_float_from_bytes(&inpkt->data[4]);
             memcpy(&returned_packet.pkt.data[2], &inpkt->data[0], 4);
             memcpy(&returned_packet.pkt.data[6], &inpkt->data[4], 4);
             returned_packet.pkt.len = 10;
             break;
+        case PKT_TYPE_GET_VEL:
+            get_bytes_from_float(l_vel_value, &returned_packet.pkt.data[2]);
+            get_bytes_from_float(r_vel_value, &returned_packet.pkt.data[6]);
+            returned_packet.pkt.len = 10;
+            break;           
         case PKT_TYPE_ENC:
             // send back the accumulated encoder values
             l_enc_value = get_encoder_count(LEFT);

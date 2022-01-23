@@ -13,8 +13,9 @@ typedef enum packet_types {
     PKT_TYPE_ACK = 1,
     PKT_TYPE_HEARTBEAT = 2,
     PKT_TYPE_STATE = 3, 
-    PKT_TYPE_VEL = 4,
-    PKT_TYPE_ENC = 5
+    PKT_TYPE_SET_VEL = 4,
+    PKT_TYPE_GET_VEL = 5, 
+    PKT_TYPE_ENC = 6
 } opus_packet_type_t;
 
 typedef struct packet {
