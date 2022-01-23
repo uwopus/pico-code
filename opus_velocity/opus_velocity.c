@@ -80,29 +80,22 @@ static float get_goal_velocity(side_t side_to_update) // Static update velocity 
 float get_cur_vel(side_t cur_vel_side)
 {
     float velocity = 0;
-    // encoder_t cur_encd;
-    // encoder_t nxt_encd;
-    // cur_encd = get_encoder_count(cur_vel_side);
-    // // sleep_us(500);
-    // nxt_encd = get_encoder_count(cur_vel_side);
-    // encoder_t test_encd = get_encoder_count(cur_vel_side);
-    encoder_t test_test_encd = get_encoder_count(cur_vel_side);
-
-    //test code
-    printf("test_test_encd_time: %d\n\r",test_test_encd.time);
-    return 0.f;
+    encoder_t cur_encd;
+    encoder_t nxt_encd;
+    cur_encd = get_encoder_count(cur_vel_side);
+    sleep_ms(5E2); // TODO: not ideal
+    nxt_encd = get_encoder_count(cur_vel_side);
 
     // Calculate velocity
-    // int32_t delta_ticks = (nxt_encd.ticks - cur_encd.ticks);
-    // int64_t delta_time = absolute_time_diff_us(cur_encd.time,nxt_encd.time);
-    // int64_t delta_time = nxt_encd.time - cur_encd.time;
-    // printf("cur_encd_time: %d | nxt_encd_time: %d\n\r",cur_encd.time,nxt_encd.time);
-    // printf("d_time: %d [us] | d_ticks: %d \n\r",delta_time,delta_ticks);
-    // printf("test_encd_time: %d\n\r",test_encd.time);
-    // float rotations = ((float) delta_ticks) * TICKS_TO_ROTATIONS;
-    // velocity = rotations * GEAR_RATIO * RADIUS * M_TWOPI / ((float)(delta_time * 10^-12));
+    int32_t delta_ticks = (nxt_encd.ticks - cur_encd.ticks);
+    int64_t delta_time = absolute_time_diff_us(cur_encd.time,nxt_encd.time);
 
-    // return velocity;
+    // printf("cur_encd_time: %llu | nxt_encd_time: %llu\n\r",cur_encd.time,nxt_encd.time);
+    
+    float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
+    velocity = (rotations * GEAR_RATIO * RADIUS * M_TWOPI) / ((float)(delta_time * 1E-6));
+
+    return velocity;
 }
 
 float get_error(side_t error_side)

@@ -40,22 +40,22 @@ encoder_t get_encoder_count(side_t side) // Side is LEFT_ENCODER or RIGHT_ENCODE
 {
     encoder_t tick_time;
     tick_time.ticks = 0; // defaults to 0 if no response
-    // tick_time.time = nil_time;
-    tick_time.time = 1;
+    tick_time.time = nil_time;
+    // tick_time.time = 1;
     if (side == LEFT)
     {
         mutex_enter_blocking(&ENCODER_L_MTX);
         tick_time.ticks = quadrature_encoder_get_count(PIO_LEFT,PIO_SM_LEFT);
-        tick_time.time = time_us_64();
-        // tick_time.time = get_absolute_time();
+        // tick_time.time = time_us_64();
+        tick_time.time = get_absolute_time();
         mutex_exit(&ENCODER_L_MTX);
     }
     else if (side == RIGHT)
     {
         mutex_enter_blocking(&ENCODER_R_MTX);
         tick_time.ticks = quadrature_encoder_get_count(PIO_RIGHT,PIO_SM_RIGHT);
-        // tick_time.time = get_absolute_time();
-        tick_time.time = time_us_64();
+        tick_time.time = get_absolute_time();
+        // tick_time.time = time_us_64();
         mutex_exit(&ENCODER_R_MTX);
     }
     else

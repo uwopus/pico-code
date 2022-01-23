@@ -16,8 +16,8 @@ typedef enum {
 
 typedef struct encoder_ticks_and_time{
     int32_t ticks;
-    uint64_t time; // time in absolute time units
-    // absolute_time_t time; // time in absolute time units
+    // uint64_t time; // time in absolute time units
+    absolute_time_t time; // time in absolute time units
 }encoder_t;
 
 typedef struct velocity_controller_parms{
