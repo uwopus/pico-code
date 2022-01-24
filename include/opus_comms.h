@@ -6,7 +6,7 @@
 #include "hardware/spi.h"
 #include "pico/sync.h"
 
-#define MAX_PKT_SIZE 10
+#define MAX_PKT_SIZE 20
 
 typedef enum packet_types {
     PKT_TYPE_INIT = 0, 
@@ -14,8 +14,9 @@ typedef enum packet_types {
     PKT_TYPE_HEARTBEAT = 2,
     PKT_TYPE_STATE = 3, 
     PKT_TYPE_SET_VEL = 4,
-    PKT_TYPE_GET_VEL = 5, 
-    PKT_TYPE_ENC = 6
+    PKT_TYPE_GET_VEL = 5,
+    PKT_TYPE_SET_CONFIG = 6,  
+    PKT_TYPE_ENC = 7
 } opus_packet_type_t;
 
 typedef struct packet {

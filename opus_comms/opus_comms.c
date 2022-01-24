@@ -168,6 +168,28 @@ void parse_packet(){
             int32_to_buf(r_enc_value, &returned_packet.pkt.data[6]);
             returned_packet.pkt.len = 10;          
             break;
+        case PKT_TYPE_SET_CONFIG:
+            controller_t* selected_controller = NULL;
+            mutex_t* controller_mtx = NULL;
+            if(inpkt->data[0] == LEFT){
+                selected_controller = &controller_params_L;
+                controller_mtx = &controller_params_L_mtx;
+            } else if (inpkt->data[0] == RIGHT) {
+                selected_controller = &controller_params_R;
+                controller_mtx = &controller_params_R_mtx;
+            }
+
+            if(selected_controller == NULL) {
+                printf("Couldn't find the controller!");
+                break;
+            }
+
+            mutex_enter_blocking(controller_mtx);
+            selected_controller->P = get_float_from_bytes(&inpkt->data[1]);
+            selected_controller->I = get_float_from_bytes(&inpkt->data[5]);
+            selected_controller->D = get_float_from_bytes(&inpkt->data[9]);
+            mutex_exit(controller_mtx);
+            
         case PKT_TYPE_STATE:
             // idk
             break;

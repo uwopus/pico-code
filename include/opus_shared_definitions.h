@@ -37,6 +37,9 @@ extern mutex_t VEL_GOAL_R_MTX;
 extern float vel_goal_L; // 
 extern float vel_goal_R;
 
+extern mutex_t controller_params_L_mtx; 
+extern mutex_t controller_params_R_mtx;
+
 extern controller_t controller_params_L;
 extern controller_t controller_params_R;
 

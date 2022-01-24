@@ -16,6 +16,8 @@ mutex_t ENCD_HIST_MTX;
 float vel_goal_L; // Linear velocity m/s
 float vel_goal_R; // Linear velocity m/s
 
+mutex_t controller_params_L_mtx;
+mutex_t controller_params_R_mtx;
 // Controller Params Init
 controller_t controller_params_L;
 controller_t controller_params_R;
@@ -37,6 +39,8 @@ void init_velocity() // Initialise
 
     mutex_init(&ENCD_HIST_MTX);
 
+    mutex_init(&controller_params_L_mtx);
+    mutex_init(&controller_params_R_mtx);
     // Init starting velocity setpoints
     mutex_enter_blocking(&VEL_GOAL_L_MTX);
     vel_goal_L = 0;
