@@ -57,7 +57,7 @@ void init_velocity() // Initialise
 
 
     // Init timers
-    add_repeating_timer_ms(100,update_encd_hist,NULL,&encoder_hist_timer);
+    add_repeating_timer_ms(20,update_encd_hist,NULL,&encoder_hist_timer);
 
 
     // Init buffer

@@ -6,7 +6,7 @@
 #include "hardware/spi.h"
 #include "pico/sync.h"
 
-#define MAX_PKT_SIZE 20
+#define COMMS_DATA_ARR_LEN (13) // the total will be byte aligned to word-sizes.
 
 typedef enum packet_types {
     PKT_TYPE_INIT = 0, 
@@ -23,7 +23,8 @@ typedef struct packet {
     uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
     opus_packet_type_t type;
     uint8_t len;
-    uint8_t data[MAX_PKT_SIZE];
+    // uint8_t RESERVED[3]; // for byte alignment.
+    uint8_t data[COMMS_DATA_ARR_LEN];
     // uint8_t crc;
 } opus_packet_t;
 

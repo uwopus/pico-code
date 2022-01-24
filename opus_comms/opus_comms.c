@@ -134,6 +134,9 @@ void parse_packet(){
     int32_t l_enc_value;
     int32_t r_enc_value;
 
+    controller_t* selected_controller;
+    mutex_t* controller_mtx;
+
 
     switch(inpkt->type){ 
         case PKT_TYPE_INIT:
@@ -169,8 +172,10 @@ void parse_packet(){
             returned_packet.pkt.len = 10;          
             break;
         case PKT_TYPE_SET_CONFIG:
-            controller_t* selected_controller = NULL;
-            mutex_t* controller_mtx = NULL;
+        // TODO: This will cause a segfault because we're accessing illegal memory
+        // Need to make the packet size larger to accomodate this, but we had issues!
+            selected_controller = NULL;
+            controller_mtx = NULL;
             if(inpkt->data[0] == LEFT){
                 selected_controller = &controller_params_L;
                 controller_mtx = &controller_params_L_mtx;
@@ -194,6 +199,8 @@ void parse_packet(){
             // idk
             break;
     }
+
+    returned_packet.pkt.len = sizeof(opus_packet_t);
 
     spi_write_blocking(OPUS_SPI_PORT, returned_packet.buf, sizeof(opus_packet_t));
 
