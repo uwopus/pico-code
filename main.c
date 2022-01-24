@@ -60,7 +60,7 @@ void core1_main(){ // velocity controller
 
 
     mutex_enter_blocking(&VEL_GOAL_L_MTX);
-    vel_goal_L = 0.1;
+    vel_goal_L = 0.0;
     mutex_exit(&VEL_GOAL_L_MTX);
 
     while (true)

@@ -1,5 +1,6 @@
 #include "opus_comms.h"
 #include "opus_encoder.h"
+#include "opus_velocity.h"
 #include "string.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
@@ -83,6 +84,16 @@ void comms_init(bool is_slave) {
     sem_init(&sem_spi_rx, 0, 1);
 }
 
+void get_bytes_from_float(float value, uint8_t* buf) {
+    union {
+        float f;
+        uint8_t conv_bytes[sizeof(float)];
+    } conv_union;
+
+    conv_union.f = value;
+    memcpy(buf, conv_union.conv_bytes, sizeof(float));    
+} 
+
 
 float get_float_from_bytes(uint8_t* bytes) {
     union {
@@ -114,6 +125,7 @@ void parse_packet(){
 
     // do crc check. 
 
+    returned_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
     returned_packet.pkt.type = PKT_TYPE_ACK;
     returned_packet.pkt.data[0] = inpkt->type;
     returned_packet.pkt.data[1] = 1; // could be true/false for ACK/NACK. If needed.
@@ -122,6 +134,7 @@ void parse_packet(){
     int32_t l_enc_value;
     int32_t r_enc_value;
 
+
     switch(inpkt->type){ 
         case PKT_TYPE_INIT:
             // set the thing to the ready state. 
@@ -129,21 +142,18 @@ void parse_packet(){
         case PKT_TYPE_HEARTBEAT:
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
-        case PKT_TYPE_VEL: 
-            mutex_enter_blocking(&VEL_GOAL_L_MTX);
+        case PKT_TYPE_SET_VEL: 
             vel_goal_L = get_float_from_bytes(&inpkt->data[0]);
-            mutex_exit(&VEL_GOAL_L_MTX);
-
-
-            mutex_enter_blocking(&VEL_GOAL_R_MTX);
             vel_goal_R = get_float_from_bytes(&inpkt->data[4]);
-            mutex_exit(&VEL_GOAL_R_MTX);
-
-            
             memcpy(&returned_packet.pkt.data[2], &inpkt->data[0], 4);
             memcpy(&returned_packet.pkt.data[6], &inpkt->data[4], 4);
             returned_packet.pkt.len = 10;
             break;
+        case PKT_TYPE_GET_VEL:
+            get_bytes_from_float(get_cur_vel(LEFT), &returned_packet.pkt.data[2]);
+            get_bytes_from_float(get_cur_vel(RIGHT), &returned_packet.pkt.data[6]);
+            returned_packet.pkt.len = 10;
+            break;           
         case PKT_TYPE_ENC:
             // send back the accumulated encoder values
             mutex_enter_blocking(&ENCODER_L_MTX);
