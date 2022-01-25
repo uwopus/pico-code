@@ -180,7 +180,7 @@ void parse_packet(){
             }
 
             if(selected_controller == NULL) {
-                printf("Couldn't find the controller!");
+              // printf("Couldn't find the controller!");
                 break;
             }
 

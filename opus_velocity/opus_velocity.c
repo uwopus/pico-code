@@ -77,7 +77,7 @@ bool update_encd_hist(repeating_timer_t *t_val){
     encoder_t encoder_l_hist_val;
     encoder_t encoder_r_hist_val;
 
-    printf("time: %llu\r\n",time_us_64());
+  // printf("time: %llu\r\n",time_us_64());
     mutex_enter_blocking(&ENCD_HIST_MTX);
     encoder_l_hist_val =  get_encoder_count(LEFT);
     encoder_r_hist_val =  get_encoder_count(RIGHT);
@@ -85,7 +85,7 @@ bool update_encd_hist(repeating_timer_t *t_val){
     encoder_hist_R[hist_indx] = encoder_r_hist_val;
     hist_indx = (hist_indx + 1) % ENC_HIST_BUFF_LEN;
     mutex_exit(&ENCD_HIST_MTX);
-    printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
+  // printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
 }
 
 static float get_goal_velocity(side_t side_to_update) // Static update velocity function that should only exist in this file
@@ -139,7 +139,7 @@ float get_cur_vel(side_t cur_vel_side)
     
     float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
     velocity = (rotations * GEAR_RATIO * RADIUS * M_TWOPI) / ((float)(delta_time * 1E-6));
-    printf("Current Velocity: %5.2f [m/s]\n\r",velocity);
+  // printf("Current Velocity: %5.2f [m/s]\n\r",velocity);
 
 
     return velocity;

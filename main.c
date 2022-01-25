@@ -4,6 +4,7 @@
 #include "opus_shared_definitions.h"
 #include "pico/multicore.h"
 #include "opus_velocity.h"
+#include "pico/time.h"
 
 void core1_main();
 void init_opus_all();
@@ -17,13 +18,14 @@ int main() {
 
     init_opus_core0();
 
+    sleep_ms(2000);
+
+    int32_t l_encoder_ticks;
+    int32_t r_encoder_ticks;
     while(1) {
-        if(sem_acquire_timeout_ms(&sem_spi_rx, 1)){
-            parse_packet();
-        }
-
-        sleep_ms(1);
-
+        l_encoder_ticks = get_encoder_count(LEFT).ticks;
+        printf("%d\r\n", l_encoder_ticks);
+        sleep_us(1500);        
     }
     
 }
@@ -35,11 +37,11 @@ void init_opus_all(){
 void init_opus_core0(){
     stdio_init_all(); //Not sure if this should remain here or go else where
     comms_init(true);
-    printf("Opus Started");
+  // printf("Opus Started");
 }
 
 void init_opus_core1(){
-    printf("Opus Started Core 1");
+  // printf("Opus Started Core 1");
     init_encoders();
     init_velocity();
     init_pwm(LEFT,PWM_WRAP);
@@ -60,8 +62,10 @@ void core1_main(){ // velocity controller
 
 
     mutex_enter_blocking(&VEL_GOAL_L_MTX);
-    vel_goal_L = 0.0;
+    vel_goal_L = 0.5;
     mutex_exit(&VEL_GOAL_L_MTX);
+
+    absolute_time_t last_time_changed = get_absolute_time();
 
     while (true)
     {
@@ -73,10 +77,15 @@ void core1_main(){ // velocity controller
         // duty_R += 0.01
         duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
+
+        if (absolute_time_diff_us(last_time_changed, get_absolute_time()) > 3e6) {
+            vel_goal_L *= -1;
+            last_time_changed = get_absolute_time();
+        }
         // duty_R = generate_set_duty(RIGHT);
         // set_pwm(RIGHT,duty_R);
 
-        int32_t ticks = get_encoder_count(LEFT).ticks;
+        // int32_t ticks = get_encoder_count(LEFT).ticks;
 
         // printf("Duty: %8.6f, Current Ticks: %d\n\r",duty_L, ticks);
         sleep_ms(10);
