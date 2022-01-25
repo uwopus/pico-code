@@ -159,13 +159,8 @@ void parse_packet(){
             break;           
         case PKT_TYPE_ENC:
             // send back the accumulated encoder values
-            mutex_enter_blocking(&ENCODER_L_MTX);
             l_enc_value = get_encoder_count(LEFT).ticks;
-            mutex_exit(&ENCODER_L_MTX);
-
-            mutex_enter_blocking(&ENCODER_R_MTX);
             r_enc_value = get_encoder_count(RIGHT).ticks;
-            mutex_exit(&ENCODER_R_MTX);
 
             int32_to_buf(l_enc_value, &returned_packet.pkt.data[2]);
             int32_to_buf(r_enc_value, &returned_packet.pkt.data[6]);
