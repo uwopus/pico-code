@@ -167,14 +167,24 @@ void parse_packet(){
             returned_packet.pkt.len = 10;          
             break;
         case PKT_TYPE_SET_CONFIG:
+            enum config{
+                SET_P_L,
+                SET_I_L,
+                SET_D_L,
+                SET_N_L,
+                SET_P_R,
+                SET_I_R,
+                SET_D_R,
+                SET_N_R
+            };
         // TODO: This will cause a segfault because we're accessing illegal memory
         // Need to make the packet size larger to accomodate this, but we had issues!
             selected_controller = NULL;
             controller_mtx = NULL;
-            if(inpkt->data[0] == LEFT){
+            if(inpkt->data[0] <= SET_N_L){
                 selected_controller = &controller_params_L;
                 controller_mtx = &controller_params_L_mtx;
-            } else if (inpkt->data[0] == RIGHT) {
+            } else if (inpkt->data[0] <= SET_N_R) {
                 selected_controller = &controller_params_R;
                 controller_mtx = &controller_params_R_mtx;
             }
@@ -183,12 +193,26 @@ void parse_packet(){
                 printf("Couldn't find the controller!");
                 break;
             }
-
-            mutex_enter_blocking(controller_mtx);
-            selected_controller->P = get_float_from_bytes(&inpkt->data[1]);
-            selected_controller->I = get_float_from_bytes(&inpkt->data[5]);
-            selected_controller->D = get_float_from_bytes(&inpkt->data[9]);
-            mutex_exit(controller_mtx);
+            else{
+                mutex_enter_blocking(controller_mtx);
+                if (inpkt->data[0] == SET_P_L || inpkt->data[0] == SET_P_R)
+                {
+                    selected_controller->P = get_float_from_bytes(&inpkt->data[1]);
+                }
+                else if (inpkt->data[0] == SET_I_L || inpkt->data[0] == SET_I_R)
+                {
+                    selected_controller->I = get_float_from_bytes(&inpkt->data[1]);
+                }
+                else if (inpkt->data[0] == SET_D_L || inpkt->data[0] == SET_D_R)
+                {
+                    selected_controller->D = get_float_from_bytes(&inpkt->data[1]);
+                }
+                else if (inpkt->data[0] == SET_N_L || inpkt->data[0] == SET_N_R)
+                {
+                    selected_controller->N = get_float_from_bytes(&inpkt->data[1]);
+                }
+                mutex_exit(controller_mtx);
+            }
             
         case PKT_TYPE_STATE:
             // idk

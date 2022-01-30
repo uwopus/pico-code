@@ -24,6 +24,7 @@ typedef struct velocity_controller_parms{
     uint8_t P;
     uint8_t I;
     uint8_t D;
+    uint8_t N;
 }controller_t;
 
 extern semaphore_t sem_spi_rx;

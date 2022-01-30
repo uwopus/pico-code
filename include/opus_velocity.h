@@ -23,6 +23,18 @@
 #define RADIUS 0.05 // in m, maybe this should be passed in by the zero
 #define GEAR_RATIO (10.f/80.f) // 
 #define ENC_HIST_BUFF_LEN 2 
+#define ENC_SAMPLE_TIME 20 // micro seconds
+#define VEL_SAMPLE_TIME 100 // needs to be implemented and checked
+
+// Motor controller default values
+#define DEFAULT_L_CONTROLLER_P 1
+#define DEFAULT_L_CONTROLLER_I 1
+#define DEFAULT_L_CONTROLLER_D 1
+#define DEFAULT_L_CONTROLLER_N 20 // from site example https://www.scilab.org/discrete-time-pid-controller-implementation
+#define DEFAULT_R_CONTROLLER_P 1
+#define DEFAULT_R_CONTROLLER_I 1
+#define DEFAULT_R_CONTROLLER_D 1
+#define DEFAULT_R_CONTROLLER_N 20
 
 void init_velocity(); // Initialise
 

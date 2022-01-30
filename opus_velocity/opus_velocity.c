@@ -52,12 +52,23 @@ void init_velocity() // Initialise
     mutex_exit(&VEL_GOAL_R_MTX);
 
     // Default Values for Controller for now
-    controller_params_L.P = 1; // These need to be set somehow by the zero for easy prototyping
-    controller_params_R.P = 1;
+    mutex_enter_blocking(&controller_params_L_mtx);
+    controller_params_L.P = DEFAULT_L_CONTROLLER_P; // These need to be set somehow by the zero for easy prototyping
+    controller_params_L.I = DEFAULT_L_CONTROLLER_I;
+    controller_params_L.D = DEFAULT_L_CONTROLLER_D;
+    controller_params_L.N = DEFAULT_L_CONTROLLER_N;
+    mutex_exit(&controller_params_L_mtx);
+    
+    mutex_enter_blocking(&controller_params_R_mtx);
+    controller_params_R.P = DEFAULT_R_CONTROLLER_P; // These need to be set somehow by the zero for easy prototyping
+    controller_params_R.I = DEFAULT_R_CONTROLLER_I;
+    controller_params_R.D = DEFAULT_R_CONTROLLER_D;
+    controller_params_R.N = DEFAULT_R_CONTROLLER_N;
+    mutex_exit(&controller_params_R_mtx);
 
 
     // Init timers
-    add_repeating_timer_ms(20,update_encd_hist,NULL,&encoder_hist_timer);
+    add_repeating_timer_ms(ENC_SAMPLE_TIME,update_encd_hist,NULL,&encoder_hist_timer);
 
 
     // Init buffer
@@ -182,19 +193,92 @@ static inline float map(float value){ // map from -1 - 1 -> 0.1 - 0.2
     return value / 20 + 0.15;
 }
 
+// Function helpers for generating parameters
+static inline float generate_b0(controller_t * K){ // must have acquired mutex,maybe we should change it to recursive mutex
+    float Ts = VEL_SAMPLE_TIME; // for easier reading
+    float N = K->N;  // for easier reading
+    return K->P*(1+N*Ts) + 
+            K->I*Ts*(1 + N*Ts) + 
+            K->D*N; // Check that this is true
+            // https://www.scilab.org/discrete-time-pid-controller-implementation
+}
+
+static inline float generate_b1(controller_t * K){// must have acquired mutex,maybe we should change it to recursive mutex
+    float Ts = VEL_SAMPLE_TIME; // for easier reading
+    float N = K->N;  // for easier reading
+    return -1.0*(K->P*(2+N*Ts) + K->I*Ts + 2*K->D*N);
+}
+
+static inline float generate_b2(controller_t * K){// must have acquired mutex,maybe we should change it to recursive mutex
+    float Ts = VEL_SAMPLE_TIME; // for easier reading
+    float N = K->N;  // for easier reading
+    return K->P + K->D * N;
+}
+
+static inline float generate_a0(controller_t * K){// must have acquired mutex,maybe we should change it to recursive mutex
+    float Ts = VEL_SAMPLE_TIME; // for easier reading
+    float N = K->N;  // for easier reading
+    return (1+N*Ts);
+}
+static inline float generate_a1(controller_t * K){// must have acquired mutex,maybe we should change it to recursive mutex
+    float Ts = VEL_SAMPLE_TIME; // for easier reading
+    float N = K->N;  // for easier reading
+    return -1.0*(2+N*Ts);
+}
+static inline float generate_a2(controller_t * K){// must have acquired mutex,maybe we should change it to recursive mutex
+    float Ts = VEL_SAMPLE_TIME; // for easier reading
+    float N = K->N;  // for easier reading
+    return 1.0;
+}
+
+
 float generate_set_duty(side_t duty_side) // This is the controller
 {
+    controller_t * params = NULL;
+    mutex_t * controller_side_mutex = NULL;
+    if (duty_side == LEFT){
+        params = &controller_params_L;
+        controller_side_mutex = &controller_params_L_mtx;
+    }
+    else if (duty_side == RIGHT){
+        params = &controller_params_R;
+        controller_side_mutex = &controller_params_R_mtx;
+    }
+    else{
+        // printf("WARNING:No side for generate set duty function");
+    }
+
+
     float duty = 0.5;
     float error = get_error(duty_side);
+    static float prev_1_input = 0.0; // need a way for this to get set to fix amount before startup?
+    static float prev_2_input = 0.0;
+    static float prev_1_error = 0.0;
+    static float prev_2_error = 0.0;
+
+    float b [3];
+    float a [3];
+    mutex_enter_blocking(controller_side_mutex);
+    b[0] = generate_b0(params);
+    b[1] = generate_b1(params);
+    b[2] = generate_b2(params);
+    a[0] = generate_a0(params);
+    a[1] = generate_a1(params);
+    a[2] = generate_a2(params);
+    mutex_exit(controller_side_mutex);
 
     // Get a raw fix value first
-    float fix_amount = error * get_controller_params(duty_side).P;
+    float fix_amount = -1*a[1]*prev_1_input/a[0] - 
+                        a[2]*prev_2_input/a[0] + 
+                        b[0]*error/a[0] +
+                        b[1]*prev_1_error/a[0] +
+                        b[2]*prev_2_error/a[0]; // Difference equation
 
     // Then need to saturate this value from -1 to 1
-    fix_amount = saturate(fix_amount);
+    float fix_amount_sat = saturate(fix_amount);
 
-    // Then need to map to duty cycle which is from 0 to 1
-    duty = map(fix_amount);
+    // Then need to map to duty cycle which is from 0.1 - 0.2
+    duty = map(fix_amount_sat);
 
     return duty;
 }
