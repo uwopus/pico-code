@@ -34,6 +34,7 @@ repeating_timer_t encoder_hist_timer;
 repeating_timer_t vel_control_timer;
 
 bool update_encd_hist(repeating_timer_t *t_val);
+bool update_velocity_pwm(repeating_timer_t *t_val);
 
 void init_velocity() // Initialise 
 {
@@ -105,8 +106,8 @@ bool update_velocity_pwm(repeating_timer_t *t_val){
     else if (cur_state == GO){
         float duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
-        float duty_L = generate_set_duty(RIGHT);
-        set_pwm(RIGHT,duty_L);
+        float duty_R = generate_set_duty(RIGHT);
+        set_pwm(RIGHT,duty_R);
     }
 }
 

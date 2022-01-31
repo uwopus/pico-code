@@ -20,6 +20,18 @@ typedef struct encoder_ticks_and_time{
     absolute_time_t time; // time in absolute time units
 }encoder_t;
 
+
+typedef enum config{
+    SET_P_L = 0,
+    SET_I_L = 1,
+    SET_D_L = 2,
+    SET_N_L = 3,
+    SET_P_R = 4,
+    SET_I_R = 5,
+    SET_D_R = 6,
+    SET_N_R = 7
+}config_t;
+
 typedef struct velocity_controller_parms{
     uint8_t P;
     uint8_t I;

@@ -167,16 +167,6 @@ void parse_packet(){
             returned_packet.pkt.len = 10;          
             break;
         case PKT_TYPE_SET_CONFIG:
-            enum config{
-                SET_P_L,
-                SET_I_L,
-                SET_D_L,
-                SET_N_L,
-                SET_P_R,
-                SET_I_R,
-                SET_D_R,
-                SET_N_R
-            };
         // TODO: This will cause a segfault because we're accessing illegal memory
         // Need to make the packet size larger to accomodate this, but we had issues!
             selected_controller = NULL;

@@ -9,5 +9,6 @@ target_link_libraries(opus_velocity PUBLIC
         pico_time
         opus_encoder
         pico_float
+        opus_pwm
         )
 

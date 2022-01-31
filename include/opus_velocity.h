@@ -15,6 +15,7 @@
 
 
 #include "opus_encoder.h"
+#include "opus_pwm.h"
 
 // Include side shared definitions
 #include "opus_shared_definitions.h"
