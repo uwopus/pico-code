@@ -40,8 +40,8 @@ typedef struct velocity_controller_parms{
 }controller_t;
 
 typedef enum {
-    GO_STATE = 0,
-    STOP_STATE = 1
+    STOP_STATE = 0,
+    GO_STATE = 1    
 }picoState_t;
 
 
