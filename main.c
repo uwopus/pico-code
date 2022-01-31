@@ -44,7 +44,7 @@ void init_opus_core1(){
     init_velocity();
     init_pwm(LEFT,PWM_WRAP);
     // init_pwm(RIGHT,PWM_WRAP);
-    set_pwm(LEFT,0.5); // Init at 0.5 which is stop
+    // set_pwm(LEFT,0.5); // Init at 0.5 which is stop
     // set_pwm(RIGHT,0.5); // Init at 0.5 which is stop
 
 }
@@ -76,7 +76,7 @@ void core1_main(){ // velocity controller
         // duty_R = generate_set_duty(RIGHT);
         // set_pwm(RIGHT,duty_R);
 
-        int32_t ticks = get_encoder_count(LEFT).ticks;
+        // int32_t ticks = get_encoder_count(LEFT).ticks;
 
         // printf("Duty: %8.6f, Current Ticks: %d\n\r",duty_L, ticks);
         sleep_ms(10);

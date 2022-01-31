@@ -36,6 +36,7 @@
 #define DEFAULT_R_CONTROLLER_I 1
 #define DEFAULT_R_CONTROLLER_D 1
 #define DEFAULT_R_CONTROLLER_N 20
+#define STOP_DUTY_CYCLE 1.5f
 
 void init_velocity(); // Initialise
 
@@ -46,6 +47,8 @@ float get_error(side_t error_side);
 float get_controller_pwm(side_t error_side);
 
 float generate_set_duty(side_t duty_side); // This is the controller
+
+void hard_stop_motors();
 
 controller_t get_controller_params(side_t controller_side);
 

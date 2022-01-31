@@ -77,7 +77,7 @@ void init_velocity() // Initialise
 
     // Init pico state - this should start as stop until told to go from comms but for now keep it here, and maybe comms should start this
     mutex_enter_blocking(&PICO_STATE_MTX);
-    pico_State = GO;
+    pico_State = STOP_STATE;
     mutex_exit(&PICO_STATE_MTX);
 
 
@@ -98,12 +98,17 @@ void init_velocity() // Initialise
     mutex_exit(&ENCD_HIST_MTX);
 }
 
+void hard_stop_motors(){
+    set_pwm(LEFT,STOP_DUTY_CYCLE);
+    set_pwm(RIGHT,STOP_DUTY_CYCLE);
+}
+
 bool update_velocity_pwm(repeating_timer_t *t_val){
     picoState_t cur_state = pico_State;
-    if (cur_state == STOP){
-        // do nothing
+    if (cur_state == STOP_STATE){
+        hard_stop_motors();
     }
-    else if (cur_state == GO){
+    else if (cur_state == GO_STATE){
         float duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
         float duty_R = generate_set_duty(RIGHT);

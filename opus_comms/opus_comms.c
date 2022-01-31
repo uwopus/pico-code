@@ -105,6 +105,16 @@ float get_float_from_bytes(uint8_t* bytes) {
     return conv_union.f;
 } 
 
+picoState_t get_picoState_from_bytes(uint8_t * bytes){
+    union {
+        picoState_t state;
+        uint8_t conv_bytes[1];
+    } conv_union;
+
+    memcpy(conv_union.conv_bytes, bytes, sizeof(conv_union));
+    return conv_union.state;
+}
+
 void int32_to_buf(int32_t value, uint8_t* buf){ 
     union {
         int32_t i; 
@@ -114,6 +124,8 @@ void int32_to_buf(int32_t value, uint8_t* buf){
     conv_union.i = value; 
     memcpy(buf, conv_union.buf, 4);
 }
+
+
 
 void parse_packet(){ 
     opus_packet_t* inpkt = &spi_incoming_packet.rx_packet;
@@ -203,9 +215,12 @@ void parse_packet(){
                 }
                 mutex_exit(controller_mtx);
             }
+            break;
             
         case PKT_TYPE_STATE:
-            // idk
+            mutex_enter_blocking(&PICO_STATE_MTX);
+            pico_State = get_picoState_from_bytes(&inpkt->data[0]);
+            mutex_exit(&PICO_STATE_MTX);
             break;
     }
 
