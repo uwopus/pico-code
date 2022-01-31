@@ -6,6 +6,7 @@
 
 #include "opus_velocity.h"
 
+
 // Declare Mutexs
 mutex_t VEL_GOAL_L_MTX;
 mutex_t VEL_GOAL_R_MTX;
@@ -76,10 +77,14 @@ void init_velocity() // Initialise
     mutex_exit(&controller_params_R_mtx);
 
     // Init pico state - this should start as stop until told to go from comms but for now keep it here, and maybe comms should start this
-    mutex_enter_blocking(&PICO_STATE_MTX);
     pico_State = STOP_STATE;
-    mutex_exit(&PICO_STATE_MTX);
 
+
+    gpio_init(25);
+    gpio_set_dir(25, GPIO_OUT);
+
+    gpio_init(17);
+    gpio_set_dir(17, GPIO_OUT);
 
     // Init timers
     add_repeating_timer_ms(ENC_SAMPLE_TIME,update_encd_hist,NULL,&encoder_hist_timer);
@@ -105,21 +110,32 @@ void hard_stop_motors(){
 
 bool update_velocity_pwm(repeating_timer_t *t_val){
     picoState_t cur_state = pico_State;
+
     if (cur_state == STOP_STATE){
+        gpio_xor_mask(1 << 17);
         hard_stop_motors();
     }
     else if (cur_state == GO_STATE){
+        gpio_put(17, 1);
         float duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
         float duty_R = generate_set_duty(RIGHT);
         set_pwm(RIGHT,duty_R);
     }
+
+    return true; // important to return true to keep timer going
+
 }
+
 
 bool update_encd_hist(repeating_timer_t *t_val){
     //for printing
     encoder_t encoder_l_hist_val;
     encoder_t encoder_r_hist_val;
+    gpio_xor_mask(1 << 25);
+    hard_stop_motors();
+
+
 
     printf("time: %llu\r\n",time_us_64());
     mutex_enter_blocking(&ENCD_HIST_MTX);
@@ -130,6 +146,8 @@ bool update_encd_hist(repeating_timer_t *t_val){
     hist_indx = (hist_indx + 1) % ENC_HIST_BUFF_LEN;
     mutex_exit(&ENCD_HIST_MTX);
     printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
+
+    return true;
 }
 
 static float get_goal_velocity(side_t side_to_update) // Static update velocity function that should only exist in this file

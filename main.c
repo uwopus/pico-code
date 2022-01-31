@@ -33,17 +33,17 @@ void init_opus_all(){
 }
 
 void init_opus_core0(){
-    stdio_init_all(); //Not sure if this should remain here or go else where
     comms_init(true);
     printf("Opus Started");
 }
 
 void init_opus_core1(){
     printf("Opus Started Core 1");
+    init_pwm(LEFT,PWM_WRAP);
+    init_pwm(RIGHT,PWM_WRAP);
     init_encoders();
     init_velocity();
-    init_pwm(LEFT,PWM_WRAP);
-    // init_pwm(RIGHT,PWM_WRAP);
+
     // set_pwm(LEFT,0.5); // Init at 0.5 which is stop
     // set_pwm(RIGHT,0.5); // Init at 0.5 which is stop
 
@@ -79,6 +79,6 @@ void core1_main(){ // velocity controller
         // int32_t ticks = get_encoder_count(LEFT).ticks;
 
         // printf("Duty: %8.6f, Current Ticks: %d\n\r",duty_L, ticks);
-        sleep_ms(10);
+        sleep_ms(200);
     }
 }
