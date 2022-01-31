@@ -71,8 +71,8 @@ void core1_main(){ // velocity controller
         // }
         // duty_L += change;
         // duty_R += 0.01
-        duty_L = generate_set_duty(LEFT);
-        set_pwm(LEFT,duty_L);
+        // duty_L = generate_set_duty(LEFT); // this now handled by the timer
+        // set_pwm(LEFT,duty_L);
         // duty_R = generate_set_duty(RIGHT);
         // set_pwm(RIGHT,duty_R);
 

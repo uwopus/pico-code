@@ -27,6 +27,15 @@ typedef struct velocity_controller_parms{
     uint8_t N;
 }controller_t;
 
+typedef enum {
+    GO = 0,
+    STOP = 1
+}picoState_t;
+
+
+extern picoState_t pico_State;
+extern mutex_t PICO_STATE_MTX;
+
 extern semaphore_t sem_spi_rx;
 
 extern mutex_t ENCODER_L_MTX;

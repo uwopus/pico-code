@@ -18,6 +18,9 @@ float vel_goal_R; // Linear velocity m/s
 
 mutex_t controller_params_L_mtx;
 mutex_t controller_params_R_mtx;
+
+mutex_t PICO_STATE_MTX;
+picoState_t pico_State;
 // Controller Params Init
 controller_t controller_params_L;
 controller_t controller_params_R;
@@ -28,6 +31,7 @@ encoder_t encoder_hist_R[ENC_HIST_BUFF_LEN];
 uint8_t hist_indx;
 
 repeating_timer_t encoder_hist_timer;
+repeating_timer_t vel_control_timer;
 
 bool update_encd_hist(repeating_timer_t *t_val);
 
@@ -41,6 +45,10 @@ void init_velocity() // Initialise
 
     mutex_init(&controller_params_L_mtx);
     mutex_init(&controller_params_R_mtx);
+
+    mutex_init(&PICO_STATE_MTX);
+
+
     // Init starting velocity setpoints
     mutex_enter_blocking(&VEL_GOAL_L_MTX);
     vel_goal_L = 0;
@@ -66,9 +74,15 @@ void init_velocity() // Initialise
     controller_params_R.N = DEFAULT_R_CONTROLLER_N;
     mutex_exit(&controller_params_R_mtx);
 
+    // Init pico state - this should start as stop until told to go from comms but for now keep it here, and maybe comms should start this
+    mutex_enter_blocking(&PICO_STATE_MTX);
+    pico_State = GO;
+    mutex_exit(&PICO_STATE_MTX);
+
 
     // Init timers
     add_repeating_timer_ms(ENC_SAMPLE_TIME,update_encd_hist,NULL,&encoder_hist_timer);
+    add_repeating_timer_ms(VEL_SAMPLE_TIME,update_velocity_pwm,NULL,&vel_control_timer);
 
 
     // Init buffer
@@ -81,6 +95,19 @@ void init_velocity() // Initialise
     }
     hist_indx = 0;
     mutex_exit(&ENCD_HIST_MTX);
+}
+
+bool update_velocity_pwm(repeating_timer_t *t_val){
+    picoState_t cur_state = pico_State;
+    if (cur_state == STOP){
+        // do nothing
+    }
+    else if (cur_state == GO){
+        float duty_L = generate_set_duty(LEFT);
+        set_pwm(LEFT,duty_L);
+        float duty_L = generate_set_duty(RIGHT);
+        set_pwm(RIGHT,duty_L);
+    }
 }
 
 bool update_encd_hist(repeating_timer_t *t_val){
