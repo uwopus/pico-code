@@ -79,13 +79,6 @@ void init_velocity() // Initialise
     // Init pico state - this should start as stop until told to go from comms but for now keep it here, and maybe comms should start this
     pico_State = STOP_STATE;
 
-
-    gpio_init(25);
-    gpio_set_dir(25, GPIO_OUT);
-
-    gpio_init(17);
-    gpio_set_dir(17, GPIO_OUT);
-
     // Init timers
     add_repeating_timer_ms(ENC_SAMPLE_TIME,update_encd_hist,NULL,&encoder_hist_timer);
     add_repeating_timer_ms(VEL_SAMPLE_TIME,update_velocity_pwm,NULL,&vel_control_timer);
@@ -112,11 +105,9 @@ bool update_velocity_pwm(repeating_timer_t *t_val){
     picoState_t cur_state = pico_State;
 
     if (cur_state == STOP_STATE){
-        gpio_xor_mask(1 << 17);
         hard_stop_motors();
     }
     else if (cur_state == GO_STATE){
-        gpio_put(17, 1);
         float duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
         float duty_R = generate_set_duty(RIGHT);
@@ -132,7 +123,6 @@ bool update_encd_hist(repeating_timer_t *t_val){
     //for printing
     encoder_t encoder_l_hist_val;
     encoder_t encoder_r_hist_val;
-    gpio_xor_mask(1 << 25);
     hard_stop_motors();
 
 

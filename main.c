@@ -4,6 +4,7 @@
 #include "opus_shared_definitions.h"
 #include "pico/multicore.h"
 #include "opus_velocity.h"
+#include "opus_led.h"
 
 void core1_main();
 void init_opus_all();
@@ -17,7 +18,12 @@ int main() {
 
     init_opus_core0();
 
+    blink_led(0, 500, 300);
+    blink_led(1, 500, 300);
+    blink_led(2, 500, 300);
+
     while(1) {
+        opus_led_update();
         if(sem_acquire_timeout_ms(&sem_spi_rx, 1)){
             parse_packet();
         }
@@ -34,6 +40,7 @@ void init_opus_all(){
 
 void init_opus_core0(){
     comms_init(true);
+    led_init();
     printf("Opus Started");
 }
 
