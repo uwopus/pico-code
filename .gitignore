@@ -73,7 +73,6 @@ dkms.conf
 *.lai
 
 # Executables
-
 ### CMake ###
 CMakeLists.txt.user
 CMakeCache.txt
@@ -104,5 +103,8 @@ build
 demos/
 
 .cortex*
+
+# Vscode settings
+settings.json
 
 # End of https://www.toptal.com/developers/gitignore/api/pico8,cmake,c++,c

@@ -18,14 +18,12 @@
 
 
 #define PIO_LEFT pio0
-#define PIO_RIGHT pio1
+#define PIO_RIGHT pio0
 #define PIO_SM_LEFT 0
-#define PIO_SM_RIGHT 0
+#define PIO_SM_RIGHT 1
 
 void init_encoders();//Initialise 
 
-int get_encoder_count(side_t side); // Side is LEFT_ENCODER or RIGHT_ENCODER
-
-
+encoder_t get_encoder_count(side_t side); // Side is LEFT_ENCODER or RIGHT_ENCODER
 
 #endif
