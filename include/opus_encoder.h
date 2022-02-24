@@ -24,6 +24,6 @@
 
 void init_encoders();//Initialise 
 
-int32_t get_encoder_count(side_t side); // Side is LEFT_ENCODER or RIGHT_ENCODER
+encoder_t get_encoder_count(side_t side); // Side is LEFT_ENCODER or RIGHT_ENCODER
 
 #endif

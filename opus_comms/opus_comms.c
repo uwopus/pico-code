@@ -1,5 +1,6 @@
 #include "opus_comms.h"
 #include "opus_encoder.h"
+#include "opus_velocity.h"
 #include "string.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
@@ -15,8 +16,15 @@
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
-float vel_setpoint_r;
-float vel_setpoint_l;
+
+uint spi_dma_rx;
+
+union {
+    uint8_t buf[sizeof(opus_packet_t)];
+    opus_packet_t rx_packet;
+} spi_incoming_packet;
+
+semaphore_t sem_spi_rx;
 
 void dma_irq() {
     sem_release(&sem_spi_rx);
@@ -76,6 +84,16 @@ void comms_init(bool is_slave) {
     sem_init(&sem_spi_rx, 0, 1);
 }
 
+void get_bytes_from_float(float value, uint8_t* buf) {
+    union {
+        float f;
+        uint8_t conv_bytes[sizeof(float)];
+    } conv_union;
+
+    conv_union.f = value;
+    memcpy(buf, conv_union.conv_bytes, sizeof(float));    
+} 
+
 
 float get_float_from_bytes(uint8_t* bytes) {
     union {
@@ -87,6 +105,16 @@ float get_float_from_bytes(uint8_t* bytes) {
     return conv_union.f;
 } 
 
+picoState_t get_picoState_from_bytes(uint8_t * bytes){
+    union {
+        picoState_t state;
+        uint8_t conv_bytes[1];
+    } conv_union;
+
+    memcpy(conv_union.conv_bytes, bytes, sizeof(conv_union));
+    return conv_union.state;
+}
+
 void int32_to_buf(int32_t value, uint8_t* buf){ 
     union {
         int32_t i; 
@@ -96,6 +124,8 @@ void int32_to_buf(int32_t value, uint8_t* buf){
     conv_union.i = value; 
     memcpy(buf, conv_union.buf, 4);
 }
+
+
 
 void parse_packet(){ 
     opus_packet_t* inpkt = &spi_incoming_packet.rx_packet;
@@ -107,6 +137,7 @@ void parse_packet(){
 
     // do crc check. 
 
+    returned_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
     returned_packet.pkt.type = PKT_TYPE_ACK;
     returned_packet.pkt.data[0] = inpkt->type;
     returned_packet.pkt.data[1] = 1; // could be true/false for ACK/NACK. If needed.
@@ -115,6 +146,10 @@ void parse_packet(){
     int32_t l_enc_value;
     int32_t r_enc_value;
 
+    controller_t* selected_controller;
+    mutex_t* controller_mtx;
+
+
     switch(inpkt->type){ 
         case PKT_TYPE_INIT:
             // set the thing to the ready state. 
@@ -122,25 +157,74 @@ void parse_packet(){
         case PKT_TYPE_HEARTBEAT:
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
-        case PKT_TYPE_VEL: 
-            vel_setpoint_l = get_float_from_bytes(&inpkt->data[0]);
-            vel_setpoint_r = get_float_from_bytes(&inpkt->data[4]);
+        case PKT_TYPE_SET_VEL: 
+            vel_goal_L = get_float_from_bytes(&inpkt->data[0]);
+            vel_goal_R = get_float_from_bytes(&inpkt->data[4]);
             memcpy(&returned_packet.pkt.data[2], &inpkt->data[0], 4);
             memcpy(&returned_packet.pkt.data[6], &inpkt->data[4], 4);
             returned_packet.pkt.len = 10;
             break;
+        case PKT_TYPE_GET_VEL:
+            get_bytes_from_float(get_cur_vel(LEFT), &returned_packet.pkt.data[2]);
+            get_bytes_from_float(get_cur_vel(RIGHT), &returned_packet.pkt.data[6]);
+            returned_packet.pkt.len = 10;
+            break;           
         case PKT_TYPE_ENC:
             // send back the accumulated encoder values
-            l_enc_value = get_encoder_count(LEFT);
-            r_enc_value = get_encoder_count(RIGHT);
+            l_enc_value = get_encoder_count(LEFT).ticks;
+            r_enc_value = get_encoder_count(RIGHT).ticks;
+
             int32_to_buf(l_enc_value, &returned_packet.pkt.data[2]);
             int32_to_buf(r_enc_value, &returned_packet.pkt.data[6]);
             returned_packet.pkt.len = 10;          
             break;
+        case PKT_TYPE_SET_CONFIG:
+        // TODO: This will cause a segfault because we're accessing illegal memory
+        // Need to make the packet size larger to accomodate this, but we had issues!
+            selected_controller = NULL;
+            controller_mtx = NULL;
+            if(inpkt->data[0] <= SET_N_L){
+                selected_controller = &controller_params_L;
+                controller_mtx = &controller_params_L_mtx;
+            } else if (inpkt->data[0] <= SET_N_R) {
+                selected_controller = &controller_params_R;
+                controller_mtx = &controller_params_R_mtx;
+            }
+
+            if(selected_controller == NULL) {
+                printf("Couldn't find the controller!");
+                break;
+            }
+            else{
+                mutex_enter_blocking(controller_mtx);
+                if (inpkt->data[0] == SET_P_L || inpkt->data[0] == SET_P_R)
+                {
+                    selected_controller->P = get_float_from_bytes(&inpkt->data[1]);
+                }
+                else if (inpkt->data[0] == SET_I_L || inpkt->data[0] == SET_I_R)
+                {
+                    selected_controller->I = get_float_from_bytes(&inpkt->data[1]);
+                }
+                else if (inpkt->data[0] == SET_D_L || inpkt->data[0] == SET_D_R)
+                {
+                    selected_controller->D = get_float_from_bytes(&inpkt->data[1]);
+                }
+                else if (inpkt->data[0] == SET_N_L || inpkt->data[0] == SET_N_R)
+                {
+                    selected_controller->N = get_float_from_bytes(&inpkt->data[1]);
+                }
+                mutex_exit(controller_mtx);
+            }
+            break;
+            
         case PKT_TYPE_STATE:
-            // idk
+            mutex_enter_blocking(&PICO_STATE_MTX);
+            pico_State = get_picoState_from_bytes(&inpkt->data[0]);
+            mutex_exit(&PICO_STATE_MTX);
             break;
     }
+
+    returned_packet.pkt.len = sizeof(opus_packet_t);
 
     spi_write_blocking(OPUS_SPI_PORT, returned_packet.buf, sizeof(opus_packet_t));
 

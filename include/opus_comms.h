@@ -6,33 +6,28 @@
 #include "hardware/spi.h"
 #include "pico/sync.h"
 
-#define MAX_PKT_SIZE 10
+#define COMMS_DATA_ARR_LEN (13) // the total will be byte aligned to word-sizes.
 
 typedef enum packet_types {
     PKT_TYPE_INIT = 0, 
     PKT_TYPE_ACK = 1,
     PKT_TYPE_HEARTBEAT = 2,
     PKT_TYPE_STATE = 3, 
-    PKT_TYPE_VEL = 4,
-    PKT_TYPE_ENC = 5
+    PKT_TYPE_SET_VEL = 4,
+    PKT_TYPE_GET_VEL = 5,
+    PKT_TYPE_SET_CONFIG = 6,  
+    PKT_TYPE_ENC = 7
 } opus_packet_type_t;
 
 typedef struct packet {
     uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
     opus_packet_type_t type;
     uint8_t len;
-    uint8_t data[MAX_PKT_SIZE];
+    // uint8_t RESERVED[3]; // for byte alignment.
+    uint8_t data[COMMS_DATA_ARR_LEN];
     // uint8_t crc;
 } opus_packet_t;
 
-uint spi_dma_rx;
-
-union {
-    uint8_t buf[sizeof(opus_packet_t)];
-    opus_packet_t rx_packet;
-} spi_incoming_packet;
-
-semaphore_t sem_spi_rx;
 
 void comms_init(bool is_slave);
 
