@@ -133,7 +133,6 @@ bool update_encd_hist(repeating_timer_t *t_val){
     encoder_t encoder_l_hist_val;
     encoder_t encoder_r_hist_val;
     gpio_xor_mask(1 << 25);
-    hard_stop_motors();
 
 
 
