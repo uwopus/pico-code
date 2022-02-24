@@ -136,7 +136,7 @@ bool update_encd_hist(repeating_timer_t *t_val){
 
 
 
-    printf("time: %llu\r\n",time_us_64());
+    // printf("time: %llu\r\n",time_us_64());
     mutex_enter_blocking(&ENCD_HIST_MTX);
     encoder_l_hist_val =  get_encoder_count(LEFT);
     encoder_r_hist_val =  get_encoder_count(RIGHT);
@@ -144,7 +144,7 @@ bool update_encd_hist(repeating_timer_t *t_val){
     encoder_hist_R[hist_indx] = encoder_r_hist_val;
     hist_indx = (hist_indx + 1) % ENC_HIST_BUFF_LEN;
     mutex_exit(&ENCD_HIST_MTX);
-    printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
+    // printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
 
     return true;
 }
@@ -199,8 +199,9 @@ float get_cur_vel(side_t cur_vel_side)
     // printf("cur_encd_time: %llu | nxt_encd_time: %llu\n\r",cur_encd.time,nxt_encd.time);
     
     float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
+    // printf("Rotations/second: %5.7f",rotations/(delta_time * 1E-6));
     velocity = (rotations * GEAR_RATIO * RADIUS * M_TWOPI) / ((float)(delta_time * 1E-6));
-    printf("Current Velocity: %5.2f [m/s]\n\r",velocity);
+    // printf("Current Velocity: %5.7f [m/s]\n\r",velocity);
 
 
     return velocity;
@@ -209,7 +210,11 @@ float get_cur_vel(side_t cur_vel_side)
 float get_error(side_t error_side)
 {
     float error = 0;
+    float goal_vel = get_goal_velocity(error_side);
+    float cur_vel = get_cur_vel(error_side);
     error = get_goal_velocity(error_side) - get_cur_vel(error_side);
+    printf("Goal Vel: %5.7f\r\n",goal_vel);
+    printf("Cur Vel: %5.7f\r\n",cur_vel);
     return error;
 }
 
@@ -284,6 +289,12 @@ static inline float generate_a2(controller_t * K){// must have acquired mutex,ma
 
 float generate_set_duty(side_t duty_side) // This is the controller
 {
+    if (duty_side == RIGHT){
+        printf("Right Side\r\n");
+    }
+    else{
+        printf("Left Side\r\n");
+    }
     controller_t * params = NULL;
     mutex_t * controller_side_mutex = NULL;
     if (duty_side == LEFT){
@@ -299,10 +310,9 @@ float generate_set_duty(side_t duty_side) // This is the controller
     }
 
 
-    float duty = 0.5;
     float error = get_error(duty_side);
-    static float prev_1_input = 0.0; // need a way for this to get set to fix amount before startup?
-    static float prev_2_input = 0.0;
+    static float prev_1_cmd = 0.0; // need a way for this to get set to fix amount before startup?
+    static float prev_2_cmd = 0.0;
     static float prev_1_error = 0.0;
     static float prev_2_error = 0.0;
 
@@ -318,17 +328,40 @@ float generate_set_duty(side_t duty_side) // This is the controller
     mutex_exit(controller_side_mutex);
 
     // Get a raw fix value first
-    float fix_amount = -1*a[1]*prev_1_input/a[0] - 
-                        a[2]*prev_2_input/a[0] + 
+    float cmd = -1*a[1]*prev_1_cmd/a[0] - 
+                        a[2]*prev_2_cmd/a[0] + 
                         b[0]*error/a[0] +
                         b[1]*prev_1_error/a[0] +
                         b[2]*prev_2_error/a[0]; // Difference equation
 
+    prev_2_cmd = prev_1_cmd;
+    prev_1_cmd = cmd;
+    prev_2_error = prev_1_error;
+    prev_1_error = error;
+
     // Then need to saturate this value from -1 to 1
-    float fix_amount_sat = saturate(fix_amount);
+    float cmd_sat = saturate(cmd);
 
     // Then need to map to duty cycle which is from 0.1 - 0.2
-    duty = map(fix_amount_sat);
+    float duty = map(cmd_sat);
+
+
+    // printf("Error: %5.7f\r\n", error);
+    // printf("Cmd: %5.7f\r\n", cmd);
+    // printf("Cmd Sat: %5.7f\r\n", cmd_sat);
+    // printf("Duty: %5.7f\r\n", duty);
+
+    
+
+    // duty = 0.150005;
+
+    // Test to find vel to duty mapping
+    duty = get_goal_velocity(duty_side) * 3.8372 + 0.0075;
+    duty = saturate(duty);
+    duty = map(duty);
+    
+    printf("Duty: %5.7f\r\n", duty);
+
 
     return duty;
 }
