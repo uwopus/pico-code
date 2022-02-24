@@ -173,19 +173,20 @@ static float get_goal_velocity(side_t side_to_update) // Static update velocity 
 
 float get_cur_vel(side_t cur_vel_side)
 {
+    // The velocity is defined per motor as + will move that side of the bot upwards - will move that side downwards
     float velocity = 0;
     encoder_t cur_encd;
-    encoder_t nxt_encd;
+    encoder_t prev_encd;
     if (cur_vel_side == LEFT){
         mutex_enter_blocking(&ENCD_HIST_MTX);
-        nxt_encd = encoder_hist_L[hist_indx];
-        cur_encd = encoder_hist_L[(hist_indx + 1) % ENC_HIST_BUFF_LEN];
+        prev_encd = encoder_hist_L[(hist_indx - 2 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+        cur_encd = encoder_hist_L[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
         mutex_exit(&ENCD_HIST_MTX);
     }
     else if (cur_vel_side == RIGHT){
         mutex_enter_blocking(&ENCD_HIST_MTX);
-        nxt_encd = encoder_hist_R[hist_indx];
-        cur_encd = encoder_hist_R[(hist_indx + 1) % ENC_HIST_BUFF_LEN];
+        prev_encd = encoder_hist_R[(hist_indx - 2 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+        cur_encd = encoder_hist_R[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
         mutex_exit(&ENCD_HIST_MTX);
     }
     else{
@@ -193,10 +194,10 @@ float get_cur_vel(side_t cur_vel_side)
     }
 
     // Calculate velocity
-    int32_t delta_ticks = (nxt_encd.ticks - cur_encd.ticks);
-    int64_t delta_time = absolute_time_diff_us(cur_encd.time,nxt_encd.time);
+    int32_t delta_ticks = (cur_encd.ticks - prev_encd.ticks);
+    int64_t delta_time = absolute_time_diff_us(cur_encd.time,prev_encd.time);
 
-    // printf("cur_encd_time: %llu | nxt_encd_time: %llu\n\r",cur_encd.time,nxt_encd.time);
+    // printf("cur_encd_time: %llu | prev_encd_time: %llu\n\r",cur_encd.time,prev_encd.time);
     
     float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
     // printf("Rotations/second: %5.7f",rotations/(delta_time * 1E-6));
