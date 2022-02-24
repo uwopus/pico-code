@@ -18,9 +18,9 @@ int main() {
 
     init_opus_core0();
 
-    blink_led(0, 500, 300);
-    blink_led(1, 500, 300);
-    blink_led(2, 500, 300);
+    opus_led_blink(0, 500, 300);
+    opus_led_blink(1, 500, 300);
+    opus_led_blink(2, 500, 300);
 
     while(1) {
         opus_led_update();
@@ -40,7 +40,7 @@ void init_opus_all(){
 
 void init_opus_core0(){
     comms_init(true);
-    led_init();
+    opus_led_init();
     printf("Opus Started");
 }
 

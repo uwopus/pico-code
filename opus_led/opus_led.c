@@ -13,7 +13,7 @@ mutex_t led_mtxs[OPUS_NUM_LEDS];
 const uint8_t pOPUS_LEDS[OPUS_NUM_LEDS] = {pOPUS_LED_1, pOPUS_LED_2, pOPUS_INBUILT_LED};
 const uint32_t OPUS_LED_MASK = (1 << pOPUS_LED_1) | (1 << pOPUS_LED_2) | (1 << pOPUS_INBUILT_LED);
 
-void led_init(){
+void opus_led_init(){
     gpio_init_mask(OPUS_LED_MASK);
     gpio_set_dir_out_masked(OPUS_LED_MASK); 
 
@@ -49,12 +49,12 @@ void opus_led_change_struct(uint8_t led_num, opus_led_mode_t mode, uint16_t* par
     mutex_exit(&led_mtxs[led_num]);
 }
 
-void put_led(uint8_t led_num, bool value){
+void opus_led_put(uint8_t led_num, bool value){
     uint16_t val = (uint16_t) value;
     opus_led_change_struct(led_num, LED_MODE_STEADY, &val, 1);
 }
 
-void blink_led(uint8_t led_num, uint16_t time_on_ms, uint16_t time_off_ms){
+void opus_led_blink(uint8_t led_num, uint16_t time_on_ms, uint16_t time_off_ms){
     uint16_t val[2] = {};
     val[0] = time_on_ms;
     val[1] = time_off_ms;

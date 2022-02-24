@@ -30,9 +30,9 @@ typedef struct {
     absolute_time_t last_time_toggled; 
 } opus_led_t;
 
-void led_init();
-void put_led(uint8_t led_num, bool value); 
-void blink_led(uint8_t led_num, uint16_t time_on_ms, uint16_t time_off_ms); // PWM blinking is unsupported on LED2 because of conflict with driving PWM. 
+void opus_led_init();
+void opus_led_put(uint8_t led_num, bool value); 
+void opus_led_blink(uint8_t led_num, uint16_t time_on_ms, uint16_t time_off_ms);
 bool opus_led_update();
 
 #endif // OPUS_LED_H
