@@ -53,10 +53,21 @@
 #define STOP_THRESH 0.001f
 
 // Stiction values
+// Min duty cycle input is defined as STICK_BAND + TALON_DEAD_BAND - SENSITIVE_BAND
+// Decrease sensitive band if bot is not moving when you want movement
+
+// With the settings below all movements work when there is no load and you request 1e-5 velocity.
+// except for the right side reel out which requres -0.00025 vel request to move
+// #define STICK_BAND (0.0075f)
+// #define TALON_DEAD_BAND (0.002f)
+// #define SENSITIVE_BAND (0.00740f) // must be less than STICK_BAND + TALON_DEAD_BAND
+// #define CUSTOM_DEAD_BAND (0.000001f)
+
+
 #define STICK_BAND (0.0075f)
 #define TALON_DEAD_BAND (0.002f)
-#define SENSITIVE_BAND (0.0075f) // must be less than STICK_BAND + TALON_DEAD_BAND
-#define CUSTOM_DEAD_BAND (0.0001f)
+#define SENSITIVE_BAND (0.00740f) // must be less than STICK_BAND + TALON_DEAD_BAND
+#define CUSTOM_DEAD_BAND (0.000001f)
 
 
 

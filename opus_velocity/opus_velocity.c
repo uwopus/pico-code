@@ -214,8 +214,8 @@ float get_error(side_t error_side)
     float goal_vel = get_goal_velocity(error_side);
     float cur_vel = get_cur_vel(error_side);
     error = get_goal_velocity(error_side) - get_cur_vel(error_side);
-    printf("Goal Vel: %5.7f\r\n",goal_vel);
-    printf("Cur Vel: %5.7f\r\n",cur_vel);
+    // printf("Goal Vel: %5.7f\r\n",goal_vel);
+    // printf("Cur Vel: %5.7f\r\n",cur_vel);
     return error;
 }
 
@@ -320,12 +320,12 @@ static inline float generate_a2(controller_t * K){// must have acquired mutex,ma
 
 float generate_set_duty(side_t duty_side) // This is the controller
 {
-    if (duty_side == RIGHT){
-        printf("Right Side\r\n");
-    }
-    else{
-        printf("Left Side\r\n");
-    }
+    // if (duty_side == RIGHT){
+    //     printf("Right Side\r\n");
+    // }
+    // else{
+    //     printf("Left Side\r\n");
+    // }
     controller_t * params = NULL;
     mutex_t * controller_side_mutex = NULL;
     if (duty_side == LEFT){
@@ -392,7 +392,7 @@ float generate_set_duty(side_t duty_side) // This is the controller
     duty = map(duty);
     duty = stiction(duty);
     
-    printf("Duty: %5.7f\r\n", duty);
+    // printf("Duty: %5.7f\r\n", duty);
 
 
     return duty;
