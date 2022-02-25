@@ -148,10 +148,10 @@ void parse_packet(){
         uint8_t buf[sizeof(opus_packet_t)];
     } returned_packet; 
 
-    uint8_t calculated_crc = crc8(spi_incoming_packet.buf, 19);
+    uint8_t calculated_crc = crc8(spi_incoming_packet.buf, sizeof(opus_packet_t));
 
-    if(calculated_crc != inpkt->crc){
-        printf("Mismatch\r\n");
+    if(calculated_crc != 0){
+       return;
     }
     returned_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
     returned_packet.pkt.type = PKT_TYPE_ACK;
@@ -240,7 +240,7 @@ void parse_packet(){
             break;
     }
 
-    returned_packet.pkt.len = sizeof(opus_packet_t);
+    // returned_packet.pkt.len = sizeof(opus_packet_t);
 
     spi_write_blocking(OPUS_SPI_PORT, returned_packet.buf, sizeof(opus_packet_t));
 
