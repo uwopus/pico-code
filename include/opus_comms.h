@@ -31,6 +31,7 @@ typedef struct packet {
 
 void comms_init(bool is_slave);
 
+void recieve_packet();
 void parse_packet();
 void send_packet(opus_packet_type_t type, void *data, uint8_t len);
 void update();

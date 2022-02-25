@@ -18,12 +18,8 @@ int main() {
     init_opus_core0();
 
     while(1) {
-        if(sem_acquire_timeout_ms(&sem_spi_rx, 1)){
-            parse_packet();
-        }
-
-        sleep_ms(1);
-
+        recieve_packet();
+        parse_packet();
     }
     
 }

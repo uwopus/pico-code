@@ -22,7 +22,7 @@
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
 
-uint spi_dma_rx;
+// uint spi_dma_rx;
 
 union {
     uint8_t buf[sizeof(opus_packet_t)];
@@ -31,11 +31,11 @@ union {
 
 semaphore_t sem_spi_rx;
 
-void dma_irq() {
-    sem_release(&sem_spi_rx);
-    dma_irqn_acknowledge_channel(0, spi_dma_rx);
-    irq_clear(DMA_IRQ_0);
-}
+// void dma_irq() {
+//     sem_release(&sem_spi_rx);
+//     dma_irqn_acknowledge_channel(0, spi_dma_rx);
+//     irq_clear(DMA_IRQ_0);
+// }
 void comms_init(bool is_slave) {
 
     // Setup SPI peripheral and GPIO pins
@@ -60,6 +60,7 @@ void comms_init(bool is_slave) {
     }
 
 
+    /* *** START OF DMA SXN 
     // Setup DMA
     spi_dma_rx = dma_claim_unused_channel(true); // Will panic if no channel!
     dma_channel_config cnfg = dma_channel_get_default_config(spi_dma_rx);
@@ -87,6 +88,8 @@ void comms_init(bool is_slave) {
 
     // Initialize Sempahore
     sem_init(&sem_spi_rx, 0, 1);
+
+    *** END OF DMA SXN */
 }
 
 void get_bytes_from_float(float value, uint8_t* buf) {
@@ -128,6 +131,10 @@ void int32_to_buf(int32_t value, uint8_t* buf){
 
     conv_union.i = value; 
     memcpy(buf, conv_union.buf, 4);
+}
+
+void recieve_packet(){
+    spi_read_blocking(OPUS_SPI_PORT, 0, spi_incoming_packet.buf, sizeof(opus_packet_t));
 }
 
 
@@ -234,5 +241,5 @@ void parse_packet(){
     spi_write_blocking(OPUS_SPI_PORT, returned_packet.buf, sizeof(opus_packet_t));
 
     // once we're done with the packet, re-activate the DMA!
-    dma_channel_set_write_addr(spi_dma_rx, spi_incoming_packet.buf, true);
+    // dma_channel_set_write_addr(spi_dma_rx, spi_incoming_packet.buf, true);
 }
