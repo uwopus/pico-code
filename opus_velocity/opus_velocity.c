@@ -173,7 +173,7 @@ static float get_goal_velocity(side_t side_to_update) // Static update velocity 
 
 float get_cur_vel(side_t cur_vel_side)
 {
-    // The velocity is defined per motor as + will move that side of the bot upwards - will move that side downwards
+    // The velocity is defined per motor as + if CCW, - is CW
     float velocity = 0;
     encoder_t cur_encd;
     encoder_t prev_encd;

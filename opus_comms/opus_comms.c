@@ -14,6 +14,11 @@
 #define pOPUS_SPI_MOSI 4
 #define pOPUS_SPI_CS 5
 
+// Define polarities to account for differences in orientation
+// Pico only considers ccw as positive, so comms must handle if that causes upward (+) or downward (-) velocity
+#define LEFT_MTR_POLARITY (1)
+#define RIGHT_MTR_POLARITY (-1)
+
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
 
@@ -158,15 +163,15 @@ void parse_packet(){
             // reset the "watchdog" that will trigger a shutdown of the motors 
             break;
         case PKT_TYPE_SET_VEL: 
-            vel_goal_L = get_float_from_bytes(&inpkt->data[0]);
-            vel_goal_R = get_float_from_bytes(&inpkt->data[4]);
+            vel_goal_L = LEFT_MTR_POLARITY*get_float_from_bytes(&inpkt->data[0]);
+            vel_goal_R = RIGHT_MTR_POLARITY*get_float_from_bytes(&inpkt->data[4]);
             memcpy(&returned_packet.pkt.data[2], &inpkt->data[0], 4);
             memcpy(&returned_packet.pkt.data[6], &inpkt->data[4], 4);
             returned_packet.pkt.len = 10;
             break;
         case PKT_TYPE_GET_VEL:
-            get_bytes_from_float(get_cur_vel(LEFT), &returned_packet.pkt.data[2]);
-            get_bytes_from_float(get_cur_vel(RIGHT), &returned_packet.pkt.data[6]);
+            get_bytes_from_float(LEFT_MTR_POLARITY * get_cur_vel(LEFT), &returned_packet.pkt.data[2]);
+            get_bytes_from_float(RIGHT_MTR_POLARITY * get_cur_vel(RIGHT), &returned_packet.pkt.data[6]);
             returned_packet.pkt.len = 10;
             break;           
         case PKT_TYPE_ENC:
