@@ -25,11 +25,12 @@ typedef struct packet {
     uint8_t len;
     // uint8_t RESERVED[3]; // for byte alignment.
     uint8_t data[COMMS_DATA_ARR_LEN];
-    uint32_t crc;
+    uint8_t crc;
 } opus_packet_t;
 
 
 void comms_init(bool is_slave);
+uint8_t crc8(const void* ptr, int len);
 
 void recieve_packet();
 void parse_packet();

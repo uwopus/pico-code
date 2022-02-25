@@ -148,8 +148,11 @@ void parse_packet(){
         uint8_t buf[sizeof(opus_packet_t)];
     } returned_packet; 
 
-    // do crc check. 
+    uint8_t calculated_crc = crc8(spi_incoming_packet.buf, 19);
 
+    if(calculated_crc != inpkt->crc){
+        printf("Mismatch\r\n");
+    }
     returned_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
     returned_packet.pkt.type = PKT_TYPE_ACK;
     returned_packet.pkt.data[0] = inpkt->type;
@@ -243,4 +246,19 @@ void parse_packet(){
 
     // once we're done with the packet, re-activate the DMA!
     // dma_channel_set_write_addr(spi_dma_rx, spi_incoming_packet.buf, true);
+}
+
+uint8_t crc8(const void* vptr, int len) {
+  const uint8_t *data = vptr;
+  unsigned crc = 0;
+  int i, j;
+  for (j = len; j; j--, data++) {
+    crc ^= (*data << 8);
+    for(i = 8; i; i--) {
+      if (crc & 0x8000)
+        crc ^= (0x1070 << 3);
+      crc <<= 1;
+    }
+  }
+  return (uint8_t)(crc >> 8);
 }
