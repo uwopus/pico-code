@@ -21,9 +21,7 @@ int main() {
     init_opus_core0();
 
     while(1) {
-        gpio_put(8, 1);
-        recieve_packet();
-        parse_packet();
+        handle_packets();
     }
     
 }

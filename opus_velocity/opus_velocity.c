@@ -86,6 +86,9 @@ void init_velocity() // Initialise
     gpio_init(17);
     gpio_set_dir(17, GPIO_OUT);
 
+    gpio_init(11);
+    gpio_set_dir(11, GPIO_OUT);
+
     // Init timers
     add_repeating_timer_ms(ENC_SAMPLE_TIME,update_encd_hist,NULL,&encoder_hist_timer);
     add_repeating_timer_ms(VEL_SAMPLE_TIME,update_velocity_pwm,NULL,&vel_control_timer);
@@ -111,16 +114,19 @@ void hard_stop_motors(){
 bool update_velocity_pwm(repeating_timer_t *t_val){
     picoState_t cur_state = pico_State;
 
-    if (cur_state == STOP_STATE){
-        gpio_xor_mask(1 << 17);
-        hard_stop_motors();
-    }
-    else if (cur_state == GO_STATE){
+    if (cur_state == GO_STATE){
+
         gpio_put(17, 1);
+        gpio_put(11, 1);
         float duty_L = generate_set_duty(LEFT);
         set_pwm(LEFT,duty_L);
         float duty_R = generate_set_duty(RIGHT);
         set_pwm(RIGHT,duty_R);
+    }
+    else{ // cur_state == STOP_STATE
+        gpio_xor_mask(1 << 17);
+        gpio_put(11, 0);
+        hard_stop_motors();
     }
 
     return true; // important to return true to keep timer going
