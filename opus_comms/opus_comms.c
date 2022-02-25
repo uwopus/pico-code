@@ -135,6 +135,7 @@ void int32_to_buf(int32_t value, uint8_t* buf){
 
 void recieve_packet(){
     spi_read_blocking(OPUS_SPI_PORT, 0, spi_incoming_packet.buf, sizeof(opus_packet_t));
+    gpio_put(8, 0);
 }
 
 

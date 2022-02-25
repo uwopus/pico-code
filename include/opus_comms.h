@@ -25,7 +25,7 @@ typedef struct packet {
     uint8_t len;
     // uint8_t RESERVED[3]; // for byte alignment.
     uint8_t data[COMMS_DATA_ARR_LEN];
-    // uint8_t crc;
+    uint32_t crc;
 } opus_packet_t;
 
 
