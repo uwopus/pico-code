@@ -33,10 +33,10 @@ typedef enum config{
 }config_t;
 
 typedef struct velocity_controller_parms{
-    uint8_t P;
-    uint8_t I;
-    uint8_t D;
-    uint8_t N;
+    float P;
+    float I;
+    float D;
+    float N;
 }controller_t;
 
 typedef enum {
