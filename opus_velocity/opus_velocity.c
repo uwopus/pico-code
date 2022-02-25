@@ -249,6 +249,36 @@ static inline float map(float value){ // map from -1 - 1 -> 0.1 - 0.2
     return value / 20 + 0.15;
 }
 
+static inline float stiction(float value){ // consider stiction
+    // there is both a deadband on the talon as well as a stiction from the motors that has to be accounted for
+    // if the map sees that the value is above 0.15 then we add to get out of the dead band
+    // if the map is below 0.15 then we add to get out of the dead band. 
+    // however we also need to make our own deadband
+
+    if (value > STOP_DUTY_CYCLE + CUSTOM_DEAD_BAND){
+        //meaning a postive movement request
+        if (value + STICK_BAND + TALON_DEAD_BAND - SENSITIVE_BAND > MAX_DUTY_CYCLE){
+            return MAX_DUTY_CYCLE;
+        }
+        else{
+            return value + STICK_BAND + TALON_DEAD_BAND - SENSITIVE_BAND;
+        }
+    }
+    else if (value < STOP_DUTY_CYCLE - CUSTOM_DEAD_BAND){
+        //meaning a postive movement request
+        if (value - STICK_BAND - TALON_DEAD_BAND + SENSITIVE_BAND < MIN_DUTY_CYCLE){
+            return MIN_DUTY_CYCLE;
+        }
+        else{
+            return value - STICK_BAND - TALON_DEAD_BAND + SENSITIVE_BAND;
+        }
+    }
+    //if you are within the band just default to the stop duty cycle
+    return STOP_DUTY_CYCLE;
+
+}
+
+
 // Function helpers for generating parameters
 static inline float generate_b0(controller_t * K){ // must have acquired mutex,maybe we should change it to recursive mutex
     float Ts = VEL_SAMPLE_TIME; // for easier reading
@@ -357,9 +387,10 @@ float generate_set_duty(side_t duty_side) // This is the controller
     // duty = 0.150005;
 
     // Test to find vel to duty mapping
-    duty = get_goal_velocity(duty_side) * 3.8372 + 0.0075;
+    duty = get_goal_velocity(duty_side) * PWM_VEL_MAP;
     duty = saturate(duty);
     duty = map(duty);
+    duty = stiction(duty);
     
     printf("Duty: %5.7f\r\n", duty);
 
