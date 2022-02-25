@@ -246,7 +246,36 @@ static inline float saturate(float value){
 }
 
 static inline float map(float value){ // map from -1 - 1 -> 0.1 - 0.2
-    return value / 20 + 0.15;
+    return (value / 2) * (MAX_DUTY_CYCLE - MIN_DUTY_CYCLE) + (MAX_DUTY_CYCLE + MIN_DUTY_CYCLE)/2;
+}
+
+static inline float stiction(float value){ // consider stiction
+    // there is both a deadband on the talon as well as a stiction from the motors that has to be accounted for
+    // if the map sees that the value is above 0.15 then we add to get out of the dead band
+    // if the map is below 0.15 then we add to get out of the dead band. 
+    // however we also need to make our own deadband
+
+    if (value > STOP_DUTY_CYCLE + CUSTOM_DEAD_BAND){
+        //meaning a postive movement request
+        if (value + STICK_BAND + TALON_DEAD_BAND - SENSITIVE_BAND > MAX_DUTY_CYCLE){
+            return MAX_DUTY_CYCLE;
+        }
+        else{
+            return value + STICK_BAND + TALON_DEAD_BAND - SENSITIVE_BAND;
+        }
+    }
+    else if (value < STOP_DUTY_CYCLE - CUSTOM_DEAD_BAND){
+        //meaning a postive movement request
+        if (value - STICK_BAND - TALON_DEAD_BAND + SENSITIVE_BAND < MIN_DUTY_CYCLE){
+            return MIN_DUTY_CYCLE;
+        }
+        else{
+            return value - STICK_BAND - TALON_DEAD_BAND + SENSITIVE_BAND;
+        }
+    }
+    //if you are within the band just default to the stop duty cycle
+    return STOP_DUTY_CYCLE;
+
 }
 
 // Function helpers for generating parameters
@@ -335,6 +364,8 @@ float generate_set_duty(side_t duty_side) // This is the controller
                         b[1]*prev_1_error/a[0] +
                         b[2]*prev_2_error/a[0]; // Difference equation
 
+    // cmd += prev_1_cmd; // This is our integrator term
+
     prev_2_cmd = prev_1_cmd;
     prev_1_cmd = cmd;
     prev_2_error = prev_1_error;
@@ -344,24 +375,29 @@ float generate_set_duty(side_t duty_side) // This is the controller
     float cmd_sat = saturate(cmd);
 
     // Then need to map to duty cycle which is from 0.1 - 0.2
-    float duty = map(cmd_sat);
+    float non_stic_duty = map(cmd_sat);
+
+    float duty = stiction(non_stic_duty);
+
+    // float duty = map(cmd_sat);
 
 
-    // printf("Error: %5.7f\r\n", error);
-    // printf("Cmd: %5.7f\r\n", cmd);
-    // printf("Cmd Sat: %5.7f\r\n", cmd_sat);
-    // printf("Duty: %5.7f\r\n", duty);
+    printf("Error: %5.7f\r\n", error);
+    printf("Cmd: %5.7f\r\n", cmd);
+    printf("Cmd Sat: %5.7f\r\n", cmd_sat);
+    // printf("Pre-stiction: %5.7f\r\n", non_stic_duty);
+    printf("Duty: %5.7f\r\n", duty);
 
     
 
     // duty = 0.150005;
 
-    // Test to find vel to duty mapping
-    duty = get_goal_velocity(duty_side) * 3.8372 + 0.0075;
-    duty = saturate(duty);
-    duty = map(duty);
+    // // Test to find vel to duty mapping
+    // duty = get_goal_velocity(duty_side) * 3.8372 + 0.0075;
+    // duty = saturate(duty);
+    // duty = map(duty);
     
-    printf("Duty: %5.7f\r\n", duty);
+    // printf("Duty: %5.7f\r\n", duty);
 
 
     return duty;

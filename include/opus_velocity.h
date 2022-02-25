@@ -37,16 +37,24 @@
 // #define DEFAULT_R_CONTROLLER_D 1
 // #define DEFAULT_R_CONTROLLER_N 20
 
-#define DEFAULT_L_CONTROLLER_P 1
-#define DEFAULT_L_CONTROLLER_I 0
-#define DEFAULT_L_CONTROLLER_D 0
+#define DEFAULT_L_CONTROLLER_P (3.8372f)
+#define DEFAULT_L_CONTROLLER_I 0.02
+#define DEFAULT_L_CONTROLLER_D -10
 #define DEFAULT_L_CONTROLLER_N 20 // from site example https://www.scilab.org/discrete-time-pid-controller-implementation
-#define DEFAULT_R_CONTROLLER_P 1
-#define DEFAULT_R_CONTROLLER_I 0
-#define DEFAULT_R_CONTROLLER_D 0
+#define DEFAULT_R_CONTROLLER_P (3.8372f)
+#define DEFAULT_R_CONTROLLER_I 0.02
+#define DEFAULT_R_CONTROLLER_D -10
 #define DEFAULT_R_CONTROLLER_N 20
 
+#define MIN_DUTY_CYCLE 0.1f
 #define STOP_DUTY_CYCLE 0.15f
+#define MAX_DUTY_CYCLE 0.2f
+
+// Stiction values
+#define STICK_BAND (0.0075f)
+#define TALON_DEAD_BAND (0.002f)
+#define SENSITIVE_BAND (0.0075f) // must be less than STICK_BAND + TALON_DEAD_BAND
+#define CUSTOM_DEAD_BAND (0.0001f)
 
 void init_velocity(); // Initialise
 
