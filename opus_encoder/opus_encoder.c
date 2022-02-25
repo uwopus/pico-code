@@ -15,8 +15,8 @@ void init_encoders()//Initialise
 {
     // Base pin to connect the A phase of the encoder.
     // The B phase must be connected to the next pin
-    const uint PIN_AB_L = 20;
-    const uint PIN_AB_R = 18;
+    const uint PIN_AB_L = 18;
+    const uint PIN_AB_R = 20;
 
     // Mutex inits
     mutex_init(&ENCODER_L_MTX);
