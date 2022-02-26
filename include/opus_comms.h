@@ -19,35 +19,32 @@ typedef enum packet_types {
     PKT_TYPE_ENC = 7
 } opus_packet_type_t;
 
-// typedef struct opus_pico_tx_packet {
-//     uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
-//     int32_t L_encd_ticks;
-//     float L_cur_vel;
-//     float L_goal_vel;
-//     int32_t R_encd_ticks;
-//     float R_cur_vel;
-//     float R_goal_vel;
-//     uint8_t state;
-//     uint8_t state_pad[2];
-//     uint8_t crc;
-// } opus_pico_tx_packet_t;
-
 typedef struct opus_pico_tx_packet {
     uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
     int32_t L_encd_ticks;
-    uint32_t L_cur_vel;
-    uint32_t L_goal_vel;
+    float L_cur_vel;
+    float L_goal_vel;
     int32_t R_encd_ticks;
-    uint32_t R_cur_vel;
-    uint32_t R_goal_vel;
+    float R_cur_vel;
+    float R_goal_vel;
     struct {
         uint8_t state;
         uint8_t pad1;
         uint8_t pad2;
         uint8_t crc;
     } state_pad_pad_crc;
-    // uint8_t state_pad_pad_crc[4];
 } opus_pico_tx_packet_t;
+
+// typedef struct opus_pico_tx_packet {
+//     uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
+//     int32_t L_encd_ticks;
+//     uint32_t L_cur_vel;
+//     uint32_t L_goal_vel;
+//     int32_t R_encd_ticks;
+//     uint32_t R_cur_vel;
+//     uint32_t R_goal_vel;
+//     // uint8_t state_pad_pad_crc[4];
+// } opus_pico_tx_packet_t;
 
 
 typedef struct opus_pico_rx_packet {

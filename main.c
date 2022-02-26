@@ -57,12 +57,16 @@ void core1_main(){ // velocity controller
     float change = 0.000;// 0.0001;
 
 
-    mutex_enter_blocking(&VEL_GOAL_L_MTX);
+    //mutex_enter_blocking(&VEL_GOAL_L_MTX);
     vel_goal_L = 0.0;
-    mutex_exit(&VEL_GOAL_L_MTX);
+    //mutex_exit(&VEL_GOAL_L_MTX);
+
+    gpio_put(8,1);
 
     while (true)
     {
+        // non_timer_update_velocity_pwm();
+
         // if (duty_L > 0.2 || duty_L < 0.1)
         // {
         //     change *= -1;
@@ -77,6 +81,6 @@ void core1_main(){ // velocity controller
         // int32_t ticks = get_encoder_count(LEFT).ticks;
 
         // printf("Duty: %8.6f, Current Ticks: %d\n\r",duty_L, ticks);
-        sleep_ms(200);
+        sleep_ms(1);
     }
 }

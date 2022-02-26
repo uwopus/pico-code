@@ -145,37 +145,36 @@ void handle_packets(){
         uint8_t buf[sizeof(opus_pico_tx_packet_t)];
     } tx_packet; 
     
-    // tx_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
-    // tx_packet.pkt.L_encd_ticks = get_encoder_count(LEFT).ticks;
-    // tx_packet.pkt.L_cur_vel = LEFT_MTR_POLARITY * get_cur_vel(LEFT);
-    // tx_packet.pkt.L_goal_vel = vel_goal_L;
-    // tx_packet.pkt.R_encd_ticks = get_encoder_count(RIGHT).ticks;
-    // tx_packet.pkt.R_cur_vel = RIGHT_MTR_POLARITY * get_cur_vel(RIGHT);
-    // tx_packet.pkt.R_goal_vel = vel_goal_R;
-    // tx_packet.pkt.state_pad_pad_crc.state = pico_State;
-    // tx_packet.pkt.state_pad_pad_crc.pad1 = 0xfa;
-    // tx_packet.pkt.state_pad_pad_crc.pad2 = 0xfa;
-    // tx_packet.pkt.state_pad_pad_crc.crc = 1; //idk
+    tx_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
+    tx_packet.pkt.L_encd_ticks = get_encoder_count(LEFT).ticks;
+    tx_packet.pkt.L_cur_vel = LEFT_MTR_POLARITY * get_cur_vel(LEFT);
+    tx_packet.pkt.L_goal_vel = vel_goal_L;
+    tx_packet.pkt.R_encd_ticks = get_encoder_count(RIGHT).ticks;
+    tx_packet.pkt.R_cur_vel = RIGHT_MTR_POLARITY * get_cur_vel(RIGHT);
+    tx_packet.pkt.R_goal_vel = vel_goal_R;
+    tx_packet.pkt.state_pad_pad_crc.state = pico_State;
+    tx_packet.pkt.state_pad_pad_crc.pad1 = 0xfa;
+    tx_packet.pkt.state_pad_pad_crc.pad2 = 0xfa;
+    tx_packet.pkt.state_pad_pad_crc.crc = 1; //idk
 
 
-    tx_packet.pkt.t_ms = 0;
-    tx_packet.pkt.L_encd_ticks = 1;
-    tx_packet.pkt.L_cur_vel = 2;
-    tx_packet.pkt.L_goal_vel = 3;
-    tx_packet.pkt.R_encd_ticks = 4;
-    tx_packet.pkt.R_cur_vel = 5;
-    tx_packet.pkt.R_goal_vel = 6;
-    tx_packet.pkt.state_pad_pad_crc.state = 7;
-    tx_packet.pkt.state_pad_pad_crc.pad1 = 8;
-    tx_packet.pkt.state_pad_pad_crc.pad2 = 9;
-    tx_packet.pkt.state_pad_pad_crc.crc = 10; //idk
+    // tx_packet.pkt.t_ms = 0;
+    // tx_packet.pkt.L_encd_ticks = 1;
+    // tx_packet.pkt.L_cur_vel = 2;
+    // tx_packet.pkt.L_goal_vel = 3;
+    // tx_packet.pkt.R_encd_ticks = 4;
+    // tx_packet.pkt.R_cur_vel = 5;
+    // tx_packet.pkt.R_goal_vel = 6;
+    // tx_packet.pkt.state_pad_pad_crc.state = 7;
+    // tx_packet.pkt.state_pad_pad_crc.pad1 = 8;
+    // tx_packet.pkt.state_pad_pad_crc.pad2 = 9;
+    // tx_packet.pkt.state_pad_pad_crc.crc = 10; //idk
 
 
     // Send tx packet
-    int a = sizeof(opus_pico_tx_packet_t);
-    // spi_read_blocking(OPUS_SPI_PORT, 0, spi_incoming_packet.buf, sizeof(opus_pico_rx_packet_t));
-    // spi_write_blocking(OPUS_SPI_PORT, tx_packet.buf, sizeof(opus_pico_tx_packet_t));
-    spi_write_read_blocking(OPUS_SPI_PORT,tx_packet.buf,spi_incoming_packet.buf,sizeof(opus_pico_tx_packet_t));
+    spi_read_blocking(OPUS_SPI_PORT, 0, spi_incoming_packet.buf, sizeof(opus_pico_rx_packet_t));
+    spi_write_blocking(OPUS_SPI_PORT, tx_packet.buf, sizeof(opus_pico_tx_packet_t));
+    // spi_write_read_blocking(OPUS_SPI_PORT,tx_packet.buf,spi_incoming_packet.buf,sizeof(opus_pico_tx_packet_t));
 
     // Process rx packt
     opus_pico_rx_packet_t* inpkt = &spi_incoming_packet.rx_packet;
