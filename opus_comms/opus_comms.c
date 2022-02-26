@@ -21,9 +21,6 @@
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
-
-// uint spi_dma_rx;
-
 union {
     uint8_t buf[sizeof(opus_pico_rx_packet_t)];
     opus_pico_rx_packet_t rx_packet;
@@ -31,12 +28,7 @@ union {
 
 semaphore_t sem_spi_rx;
 
-// void dma_irq() {
-//     sem_release(&sem_spi_rx);
-//     dma_irqn_acknowledge_channel(0, spi_dma_rx);
-//     irq_clear(DMA_IRQ_0);
-// }
-void comms_init(bool is_slave) {
+void comms_init() {
 
     // Setup SPI peripheral and GPIO pins
     spi_init(OPUS_SPI_PORT, OPUS_BAUDRATE);
@@ -50,46 +42,8 @@ void comms_init(bool is_slave) {
     // Page 537 of the RP2040 Datasheet.
     spi_set_format(OPUS_SPI_PORT, 8, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST); 
 
-    if(is_slave) {
-        spi_set_slave(OPUS_SPI_PORT, true);
-        gpio_set_dir(pOPUS_SPI_MISO, GPIO_OUT);
-    } else {
-        gpio_set_dir(pOPUS_SPI_SCK, GPIO_OUT);
-        gpio_set_dir(pOPUS_SPI_MOSI, GPIO_OUT);
-        gpio_set_dir(pOPUS_SPI_CS, GPIO_OUT);
-    }
-
-
-    /* *** START OF DMA SXN 
-    // Setup DMA
-    spi_dma_rx = dma_claim_unused_channel(true); // Will panic if no channel!
-    dma_channel_config cnfg = dma_channel_get_default_config(spi_dma_rx);
-    channel_config_set_transfer_data_size(&cnfg, DMA_SIZE_8);
-    channel_config_set_dreq(&cnfg, spi_get_dreq(OPUS_SPI_PORT, false));
-    channel_config_set_read_increment(&cnfg, false);
-    channel_config_set_write_increment(&cnfg, true); 
-    // channel_config_set_ring(&cnfg, true, 8);
-    channel_config_set_irq_quiet(&cnfg, false); // irq on every transfer
-
-    dma_irqn_set_channel_enabled(0, spi_dma_rx, true);
-
-
-    dma_channel_configure(spi_dma_rx,
-                          &cnfg, 
-                          spi_incoming_packet.buf,
-                          &spi_get_hw(OPUS_SPI_PORT)->dr,
-                          sizeof(opus_packet_t),
-                          true); // start
-
-
-    // Setup DMA IRQ
-    irq_set_enabled(DMA_IRQ_0, true);
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq); 
-
-    // Initialize Sempahore
-    sem_init(&sem_spi_rx, 0, 1);
-
-    *** END OF DMA SXN */
+    spi_set_slave(OPUS_SPI_PORT, true);
+    gpio_set_dir(pOPUS_SPI_MISO, GPIO_OUT);
 }
 
 void get_bytes_from_float(float value, uint8_t* buf) {
@@ -133,11 +87,6 @@ void int32_to_buf(int32_t value, uint8_t* buf){
     memcpy(buf, conv_union.buf, 4);
 }
 
-void receive_packet(){
-}
-
-
-
 void handle_packets(){ 
     // Create TX Packet
     union {
@@ -156,20 +105,6 @@ void handle_packets(){
     tx_packet.pkt.state_pad_pad_crc.pad1 = 0xfa;
     tx_packet.pkt.state_pad_pad_crc.pad2 = 0xfa;
     tx_packet.pkt.state_pad_pad_crc.crc = 1; //idk
-
-
-    // tx_packet.pkt.t_ms = 0;
-    // tx_packet.pkt.L_encd_ticks = 1;
-    // tx_packet.pkt.L_cur_vel = 2;
-    // tx_packet.pkt.L_goal_vel = 3;
-    // tx_packet.pkt.R_encd_ticks = 4;
-    // tx_packet.pkt.R_cur_vel = 5;
-    // tx_packet.pkt.R_goal_vel = 6;
-    // tx_packet.pkt.state_pad_pad_crc.state = 7;
-    // tx_packet.pkt.state_pad_pad_crc.pad1 = 8;
-    // tx_packet.pkt.state_pad_pad_crc.pad2 = 9;
-    // tx_packet.pkt.state_pad_pad_crc.crc = 10; //idk
-
 
     // Send tx packet
     spi_read_blocking(OPUS_SPI_PORT, 0, spi_incoming_packet.buf, sizeof(opus_pico_rx_packet_t));

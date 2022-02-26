@@ -31,7 +31,7 @@ void init_opus_all(){
 }
 
 void init_opus_core0(){
-    comms_init(true);
+    comms_init();
     printf("Opus Started");
 }
 
@@ -41,10 +41,6 @@ void init_opus_core1(){
     init_pwm(RIGHT,PWM_WRAP);
     init_encoders();
     init_velocity();
-
-    // set_pwm(LEFT,0.5); // Init at 0.5 which is stop
-    // set_pwm(RIGHT,0.5); // Init at 0.5 which is stop
-
 }
 
 void core1_main(){ // velocity controller
@@ -54,8 +50,6 @@ void core1_main(){ // velocity controller
 
     float duty_L = 0.15; // I know don't need two but for readability maybe?
     float duty_R = 0.15;
-    float change = 0.000;// 0.0001;
-
 
     //mutex_enter_blocking(&VEL_GOAL_L_MTX);
     vel_goal_L = 0.0;
@@ -66,21 +60,6 @@ void core1_main(){ // velocity controller
     while (true)
     {
         // non_timer_update_velocity_pwm();
-
-        // if (duty_L > 0.2 || duty_L < 0.1)
-        // {
-        //     change *= -1;
-        // }
-        // duty_L += change;
-        // duty_R += 0.01
-        // duty_L = generate_set_duty(LEFT); // this now handled by the timer
-        // set_pwm(LEFT,duty_L);
-        // duty_R = generate_set_duty(RIGHT);
-        // set_pwm(RIGHT,duty_R);
-
-        // int32_t ticks = get_encoder_count(LEFT).ticks;
-
-        // printf("Duty: %8.6f, Current Ticks: %d\n\r",duty_L, ticks);
         sleep_ms(1);
     }
 }

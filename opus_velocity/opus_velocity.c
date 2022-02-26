@@ -22,6 +22,7 @@ mutex_t controller_params_R_mtx;
 
 mutex_t PICO_STATE_MTX;
 picoState_t pico_State;
+
 // Controller Params Init
 controller_t controller_params_L;
 controller_t controller_params_R;
@@ -40,7 +41,7 @@ repeating_timer_t vel_control_timer;
 bool update_encd_hist(repeating_timer_t *t_val);
 bool update_velocity_pwm(repeating_timer_t *t_val);
 
-void init_velocity() // Initialise 
+void init_velocity() 
 {
     // Mutex inits
     mutex_init(&VEL_GOAL_L_MTX);
@@ -152,7 +153,6 @@ void non_timer_update_velocity_pwm(){
         set_pwm(RIGHT,duty_R);
     }
     else{ // cur_state == STOP_STATE
-        // gpio_xor_mask(1 << 17);
         gpio_put(17, 0);
         gpio_put(11, 0);
         hard_stop_motors();
@@ -167,8 +167,6 @@ bool update_encd_hist(repeating_timer_t *t_val){
     encoder_t encoder_l_prev_val;
     encoder_t encoder_r_prev_val;
     gpio_xor_mask(1 << 25);
-
-
 
     // printf("time: %llu\r\n",time_us_64());
     //mutex_enter_blocking(&ENCD_HIST_MTX);
@@ -191,10 +189,9 @@ bool update_encd_hist(repeating_timer_t *t_val){
     // add calculation for velocity here
     cur_rps_L = ((float) delta_ticks_l) / ( TICKS_PER_ROTATION * ((float)(delta_time_l * 1E-6)));
     cur_rps_R = ((float) delta_ticks_r) / ( TICKS_PER_ROTATION * ((float)(delta_time_r * 1E-6)));
-
-
-
     //mutex_exit(&ENCD_HIST_MTX);
+
+
     // printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
 
     return true;
@@ -351,8 +348,9 @@ static inline float generate_a2(controller_t * K){// must have acquired mutex,ma
 }
 
 
-float generate_set_duty(side_t duty_side) // This is the controller
-{
+// PID Controller that doesn't work!
+float generate_set_duty_pid(side_t duty_side) {
+
     if (duty_side == RIGHT){
         printf("Right Side\r\n");
     }
@@ -409,23 +407,31 @@ float generate_set_duty(side_t duty_side) // This is the controller
     // Then need to map to duty cycle which is from 0.1 - 0.2
     float duty = map(cmd_sat);
 
-
     // printf("Error: %5.7f\r\n", error);
     // printf("Cmd: %5.7f\r\n", cmd);
     // printf("Cmd Sat: %5.7f\r\n", cmd_sat);
     // printf("Duty: %5.7f\r\n", duty);
 
-    
+    return duty;
+}
 
-    // duty = 0.150005;
 
-    // Test to find vel to duty mapping
+float generate_set_duty(side_t duty_side) // Linear mapping from input cmd to duty cycle
+{
+    float duty;
+
+    if (duty_side == RIGHT){
+        printf("**Right Side**\r\n");
+    }
+    else{
+        printf("--Left Side--\r\n");
+    }
+
     duty = get_goal_velocity(duty_side) * 3.8372 + 0.0075;
     duty = saturate(duty);
     duty = map(duty);
     
     printf("Duty: %5.7f\r\n", duty);
-
 
     return duty;
 }
