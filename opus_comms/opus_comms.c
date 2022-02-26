@@ -21,6 +21,8 @@
 
 #define OPUS_SPI_PINS ((1 << pOPUS_SPI_SCK) | (1 << pOPUS_SPI_MISO) | (1 << pOPUS_SPI_MOSI) | (1 << pOPUS_SPI_CS))
 
+int crcFails = 0;
+
 union {
     uint8_t buf[sizeof(opus_pico_rx_packet_t)];
     opus_pico_rx_packet_t rx_packet;
@@ -104,7 +106,7 @@ void handle_packets(){
     tx_packet.pkt.state_pad_pad_crc.state = pico_State;
     tx_packet.pkt.state_pad_pad_crc.pad1 = 0xfa;
     tx_packet.pkt.state_pad_pad_crc.pad2 = 0xfa;
-    tx_packet.pkt.state_pad_pad_crc.crc = 1; //idk
+    tx_packet.pkt.state_pad_pad_crc.crc = crc8(tx_packet.buf, sizeof(opus_pico_tx_packet_t) - 1); //idk
 
     // Send tx packet
     spi_read_blocking(OPUS_SPI_PORT, 0, spi_incoming_packet.buf, sizeof(opus_pico_rx_packet_t));
@@ -116,14 +118,17 @@ void handle_packets(){
 
     uint8_t calculated_crc = crc8(spi_incoming_packet.buf, sizeof(opus_pico_rx_packet_t));
 
-    // if(calculated_crc != 0){
-    //    return;
-    // }
+    if(calculated_crc == 0){
+        // Parse RX Packet
+        vel_goal_L = LEFT_MTR_POLARITY * inpkt->L_vel_cmd;
+        vel_goal_R = RIGHT_MTR_POLARITY * inpkt->R_vel_cmd;
+        pico_State = inpkt->state_cmd;
+    } else {
+        gpio_xor_mask(1 << 8);
+        crcFails++;
+    }
 
-    // Parse RX Packet
-    vel_goal_L = LEFT_MTR_POLARITY * inpkt->L_vel_cmd;
-    vel_goal_R = RIGHT_MTR_POLARITY * inpkt->R_vel_cmd;
-    pico_State = inpkt->state_cmd;
+
 }
 
 uint8_t crc8(const void* vptr, int len) {
