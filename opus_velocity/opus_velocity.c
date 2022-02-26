@@ -29,6 +29,9 @@ controller_t controller_params_R;
 encoder_t encoder_hist_L[ENC_HIST_BUFF_LEN];
 encoder_t encoder_hist_R[ENC_HIST_BUFF_LEN];
 
+float cur_rps_L; //current rotations per second as found from repeating timer
+float cur_rps_R;
+
 uint8_t hist_indx;
 
 repeating_timer_t encoder_hist_timer;
@@ -159,19 +162,38 @@ void non_timer_update_velocity_pwm(){
 
 bool update_encd_hist(repeating_timer_t *t_val){
     //for printing
-    encoder_t encoder_l_hist_val;
-    encoder_t encoder_r_hist_val;
+    encoder_t encoder_l_cur_val;
+    encoder_t encoder_r_cur_val;
+    encoder_t encoder_l_prev_val;
+    encoder_t encoder_r_prev_val;
     gpio_xor_mask(1 << 25);
 
 
 
     // printf("time: %llu\r\n",time_us_64());
     //mutex_enter_blocking(&ENCD_HIST_MTX);
-    encoder_l_hist_val =  get_encoder_count(LEFT);
-    encoder_r_hist_val =  get_encoder_count(RIGHT);
-    encoder_hist_L[hist_indx] = encoder_l_hist_val;
-    encoder_hist_R[hist_indx] = encoder_r_hist_val;
+    encoder_l_cur_val =  get_encoder_count(LEFT);
+    encoder_r_cur_val =  get_encoder_count(RIGHT);
+    encoder_l_prev_val = encoder_hist_L[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+    encoder_r_prev_val = encoder_hist_R[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+    encoder_hist_L[hist_indx] = encoder_l_cur_val;
+    encoder_hist_R[hist_indx] = encoder_r_cur_val;
     hist_indx = (hist_indx + 1) % ENC_HIST_BUFF_LEN;
+    
+    
+    // Calculate delta values
+    int32_t delta_ticks_l = (encoder_l_cur_val.ticks - encoder_l_prev_val.ticks);
+    int64_t delta_time_l = absolute_time_diff_us(encoder_l_cur_val.time,encoder_l_prev_val.time);
+    int32_t delta_ticks_r = (encoder_r_cur_val.ticks - encoder_r_prev_val.ticks);
+    int64_t delta_time_r = absolute_time_diff_us(encoder_r_cur_val.time,encoder_r_prev_val.time);
+
+
+    // add calculation for velocity here
+    cur_rps_L = ((float) delta_ticks_l) / ( TICKS_PER_ROTATION * ((float)(delta_time_l * 1E-6)));
+    cur_rps_R = ((float) delta_ticks_r) / ( TICKS_PER_ROTATION * ((float)(delta_time_r * 1E-6)));
+
+
+
     //mutex_exit(&ENCD_HIST_MTX);
     // printf("updated vals: encd_l.tick: %d | encd_l.time: %llu | endc_r.tick: %d | encd_r.time: %llu\r\n",encoder_l_hist_val.ticks,encoder_l_hist_val.time,encoder_r_hist_val.ticks,encoder_r_hist_val.time);
 
@@ -202,37 +224,49 @@ static float get_goal_velocity(side_t side_to_update) // Static update velocity 
 
 float get_cur_vel(side_t cur_vel_side)
 {
-    // The velocity is defined per motor as + if CCW, - is CW
-    float velocity = 0;
-    encoder_t cur_encd;
-    encoder_t prev_encd;
+    // // The velocity is defined per motor as + if CCW, - is CW
+    // float velocity = 0;
+    // encoder_t cur_encd;
+    // encoder_t prev_encd;
+    // if (cur_vel_side == LEFT){
+    //     //mutex_enter_blocking(&ENCD_HIST_MTX);
+    //     prev_encd = encoder_hist_L[(hist_indx - 2 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+    //     cur_encd = encoder_hist_L[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+    //     //mutex_exit(&ENCD_HIST_MTX);
+    // }
+    // else if (cur_vel_side == RIGHT){
+    //     //mutex_enter_blocking(&ENCD_HIST_MTX);
+    //     prev_encd = encoder_hist_R[(hist_indx - 2 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+    //     cur_encd = encoder_hist_R[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
+    //     //mutex_exit(&ENCD_HIST_MTX);
+    // }
+    // else{
+    //     //printf("WARNING: Side not supported in get cur velocity function")
+    // }
+
+    // // Calculate velocity
+    // int32_t delta_ticks = (cur_encd.ticks - prev_encd.ticks);
+    // int64_t delta_time = absolute_time_diff_us(cur_encd.time,prev_encd.time);
+
+    // // printf("cur_encd_time: %llu | prev_encd_time: %llu\n\r",cur_encd.time,prev_encd.time);
+    
+    // float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
+    // // printf("Rotations/second: %5.7f",rotations/(delta_time * 1E-6));
+
+    float rotations_per_sec = 0.0;
     if (cur_vel_side == LEFT){
-        //mutex_enter_blocking(&ENCD_HIST_MTX);
-        prev_encd = encoder_hist_L[(hist_indx - 2 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
-        cur_encd = encoder_hist_L[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
-        //mutex_exit(&ENCD_HIST_MTX);
+        rotations_per_sec = cur_rps_L;
     }
     else if (cur_vel_side == RIGHT){
-        //mutex_enter_blocking(&ENCD_HIST_MTX);
-        prev_encd = encoder_hist_R[(hist_indx - 2 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
-        cur_encd = encoder_hist_R[(hist_indx - 1 + ENC_HIST_BUFF_LEN) % ENC_HIST_BUFF_LEN];
-        //mutex_exit(&ENCD_HIST_MTX);
+        rotations_per_sec = cur_rps_R;
     }
     else{
         //printf("WARNING: Side not supported in get cur velocity function")
     }
 
-    // Calculate velocity
-    int32_t delta_ticks = (cur_encd.ticks - prev_encd.ticks);
-    int64_t delta_time = absolute_time_diff_us(cur_encd.time,prev_encd.time);
 
-    // printf("cur_encd_time: %llu | prev_encd_time: %llu\n\r",cur_encd.time,prev_encd.time);
-    
-    float rotations = ((float) delta_ticks) / TICKS_PER_ROTATION;
-    // printf("Rotations/second: %5.7f",rotations/(delta_time * 1E-6));
-    velocity = (rotations * GEAR_RATIO * RADIUS * M_TWOPI) / ((float)(delta_time * 1E-6));
+    float velocity = (rotations_per_sec * GEAR_RATIO * RADIUS * M_TWOPI);
     // printf("Current Velocity: %5.7f [m/s]\n\r",velocity);
-
 
     return velocity;
 }
