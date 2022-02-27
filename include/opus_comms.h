@@ -6,32 +6,34 @@
 #include "hardware/spi.h"
 #include "pico/sync.h"
 
-#define COMMS_DATA_ARR_LEN (13) // the total will be byte aligned to word-sizes.
-
-typedef enum packet_types {
-    PKT_TYPE_INIT = 0, 
-    PKT_TYPE_ACK = 1,
-    PKT_TYPE_HEARTBEAT = 2,
-    PKT_TYPE_STATE = 3, 
-    PKT_TYPE_SET_VEL = 4,
-    PKT_TYPE_GET_VEL = 5,
-    PKT_TYPE_SET_CONFIG = 6,  
-    PKT_TYPE_ENC = 7
-} opus_packet_type_t;
-
-typedef struct packet {
+typedef struct opus_pico_tx_packet {
     uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
-    opus_packet_type_t type;
-    uint8_t len;
-    // uint8_t RESERVED[3]; // for byte alignment.
-    uint8_t data[COMMS_DATA_ARR_LEN];
-    // uint8_t crc;
-} opus_packet_t;
+    int32_t L_encd_ticks;
+    float L_cur_vel;
+    float L_goal_vel;
+    int32_t R_encd_ticks;
+    float R_cur_vel;
+    float R_goal_vel;
+    struct {
+        uint8_t state;
+        uint8_t pad1;
+        uint8_t pad2;
+        uint8_t crc;
+    } state_pad_pad_crc;
+} opus_pico_tx_packet_t;
 
+typedef struct opus_pico_rx_packet {
+    uint32_t t_ms; // sequence number, monotonically increasing until wraparound 
+    float L_vel_cmd;
+    float R_vel_cmd;
+    uint8_t state_cmd;
+    uint8_t state_pad[3];
+    uint8_t reserved[15];
+    uint8_t crc;
+} opus_pico_rx_packet_t;
 
-void comms_init(bool is_slave);
+void comms_init();
+void handle_packets();
+uint8_t crc8(const void* ptr, int len);
 
-void parse_packet();
-void send_packet(opus_packet_type_t type, void *data, uint8_t len);
-void update();
 #endif

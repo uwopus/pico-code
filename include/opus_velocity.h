@@ -62,4 +62,6 @@ void hard_stop_motors();
 
 controller_t get_controller_params(side_t controller_side);
 
+void non_timer_update_velocity_pwm();
+
 #endif
