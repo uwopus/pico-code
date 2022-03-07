@@ -21,7 +21,7 @@
 #include "opus_shared_definitions.h"
 
 #define TICKS_PER_ROTATION 1992.6
-#define RADIUS 0.05 // in m, maybe this should be passed in by the zero
+#define RADIUS 0.025 // in m, maybe this should be passed in by the zero
 #define GEAR_RATIO (30.f/50.f) // 
 #define ENC_HIST_BUFF_LEN 2 
 #define ENC_SAMPLE_TIME 100 // milliseconds
