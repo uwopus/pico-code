@@ -99,10 +99,10 @@ void handle_packets(){
     tx_packet.pkt.t_ms = to_ms_since_boot(get_absolute_time());
     tx_packet.pkt.L_encd_ticks = get_encoder_count(LEFT).ticks;
     tx_packet.pkt.L_cur_vel = LEFT_MTR_POLARITY * get_cur_vel(LEFT);
-    tx_packet.pkt.L_goal_vel = vel_goal_L;
+    tx_packet.pkt.L_goal_vel = LEFT_MTR_POLARITY * vel_goal_L;
     tx_packet.pkt.R_encd_ticks = get_encoder_count(RIGHT).ticks;
     tx_packet.pkt.R_cur_vel = RIGHT_MTR_POLARITY * get_cur_vel(RIGHT);
-    tx_packet.pkt.R_goal_vel = vel_goal_R;
+    tx_packet.pkt.R_goal_vel = RIGHT_MTR_POLARITY * vel_goal_R;
     tx_packet.pkt.state_pad_pad_crc.state = pico_State;
     tx_packet.pkt.state_pad_pad_crc.pad1 = 0xfa;
     tx_packet.pkt.state_pad_pad_crc.pad2 = 0xfa;
