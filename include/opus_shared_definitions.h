@@ -8,6 +8,8 @@
 #include "pico/sync.h"
 #include "pico/time.h"
 
+#define pOPUS_LEASH_PIN 12
+
 
 typedef enum {
     LEFT = 0,
@@ -64,6 +66,8 @@ extern mutex_t controller_params_R_mtx;
 
 extern controller_t controller_params_L;
 extern controller_t controller_params_R;
+
+extern bool comms_enabled;
 
 
 #endif

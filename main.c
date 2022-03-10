@@ -35,12 +35,19 @@ void init_opus_core0(){
     printf("Opus Started");
 }
 
+void init_leash() {
+    gpio_init(pOPUS_LEASH_PIN);
+    gpio_set_dir(pOPUS_LEASH_PIN, GPIO_IN);
+    gpio_set_pulls(pOPUS_LEASH_PIN, true, false);
+}
+
 void init_opus_core1(){
     printf("Opus Started Core 1");
     init_pwm(LEFT,PWM_WRAP);
     init_pwm(RIGHT,PWM_WRAP);
     init_encoders();
     init_velocity();
+    init_leash();
 }
 
 void core1_main(){ // velocity controller
@@ -60,6 +67,23 @@ void core1_main(){ // velocity controller
     while (true)
     {
         // non_timer_update_velocity_pwm();
+
+        if(gpio_get(pOPUS_LEASH_PIN) == 1) {
+            comms_enabled = false;
+            hard_stop_motors();
+            pico_State = STOP_STATE;
+            hard_stop_motors();
+
+            gpio_put_masked((1 << 25) | (1 << 8) | (1 << 17), 0);
+
+            multicore_lockout_start_blocking(); // kill the other core
+
+            gpio_put(25, 1);
+
+            while(true) {
+                sleep_ms(1);
+            }
+        }
         sleep_ms(1);
     }
 }
