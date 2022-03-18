@@ -68,22 +68,22 @@ void core1_main(){ // velocity controller
     {
         // non_timer_update_velocity_pwm();
 
-        if(gpio_get(pOPUS_LEASH_PIN) == 1) {
-            comms_enabled = false;
-            hard_stop_motors();
-            pico_State = STOP_STATE;
-            hard_stop_motors();
+        // if(gpio_get(pOPUS_LEASH_PIN) == 1) {
+        //     comms_enabled = false;
+        //     hard_stop_motors();
+        //     pico_State = STOP_STATE;
+        //     hard_stop_motors();
 
-            gpio_put_masked((1 << 25) | (1 << 8) | (1 << 17), 0);
+        //     gpio_put_masked((1 << 25) | (1 << 8) | (1 << 17), 0);
 
-            multicore_lockout_start_blocking(); // kill the other core
+        //     multicore_lockout_start_blocking(); // kill the other core
 
-            gpio_put(25, 1);
+        //     gpio_put(25, 1);
 
-            while(true) {
-                sleep_ms(1);
-            }
-        }
+        //     while(true) {
+        //         sleep_ms(1);
+        //     }
+        // }
         sleep_ms(1);
     }
 }

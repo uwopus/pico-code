@@ -415,6 +415,19 @@ float generate_set_duty_pid(side_t duty_side) {
     return duty;
 }
 
+static inline float stiction_offset(float vel){
+    // Symmetrical for now
+    if (vel > ZERO_THRESH){
+        vel += STICTION_OFFSET;
+    }
+    else if (vel < -ZERO_THRESH) {
+        vel -= STICTION_OFFSET;
+    }
+    else{
+        vel = 0;
+    }
+    return vel;
+}
 
 float generate_set_duty(side_t duty_side) // Linear mapping from input cmd to duty cycle
 {
@@ -427,7 +440,8 @@ float generate_set_duty(side_t duty_side) // Linear mapping from input cmd to du
         printf("--Left Side--\r\n");
     }
 
-    duty = get_goal_velocity(duty_side) * 3.8372 + 0.0075;
+    duty = get_goal_velocity(duty_side) * 3.8372;
+    duty = stiction_offset(duty);
     duty = saturate(duty);
     duty = map(duty);
     

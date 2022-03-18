@@ -47,6 +47,8 @@
 #define DEFAULT_R_CONTROLLER_N 20
 
 #define STOP_DUTY_CYCLE 0.15f
+#define STICTION_OFFSET 0.0090f
+#define ZERO_THRESH 1e-5
 
 void init_velocity(); // Initialise
 
