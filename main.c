@@ -15,7 +15,7 @@ int main() {
     init_opus_all();
     multicore_launch_core1(core1_main); // Control Loop Core. 
 
-    gpio_init(8);
+    pio_init(8);
     gpio_set_dir(8, GPIO_OUT);
 
     init_opus_core0();
